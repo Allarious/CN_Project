@@ -121,20 +121,20 @@ class NetworkGraph:
         new_node.get_parent().add_child(new_node)
 
         """ Add a new node with node_address if it does not exist in our NetworkGraph and set its father.
-  
+
           Warnings:
               1. Don't forget to set the new node as one of the father_address children.
               2. Before using this function make sure that there is a node which has father_address.
-  
+
           :param ip: IP address of the new node.
           :param port: Port of the new node.
           :param father_address: Father address of the new node
-  
+
           :type ip: str
           :type port: int
           :type father_address: tuple
-  
-  
+
+
           :return:
          """
         pass
