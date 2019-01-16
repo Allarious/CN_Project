@@ -215,7 +215,7 @@ class Packet:
         :return: Packet Version
         :rtype: int
         """
-        return self.version
+        return (self.version[0] << 8) + self.version[1]
 
     def get_type(self):
         """
@@ -223,7 +223,7 @@ class Packet:
         :return: Packet type
         :rtype: int
         """
-        return self.type
+        return (self.type[0] << 8) + self.type[1]
 
     def get_length(self):
         """
@@ -231,7 +231,7 @@ class Packet:
         :return: Packet length
         :rtype: int
         """
-        return self.length
+        return (self.length[0] << 24) + (self.length[1] << 16) + (self.length[2] << 8) + self.length[3]
 
     def get_body(self):
         """
@@ -256,7 +256,7 @@ class Packet:
         :return: Server IP address for the sender of the packet.
         :rtype: str
         """
-        return self.server_ip
+        return str((self.server_ip[0] << 8) + self.server_ip[1]).zfill(3) + '.' +  str((self.server_ip[2] << 8) + self.server_ip[3]).zfill(3) + '.' +  str((self.server_ip[4] << 8) + self.server_ip[5]).zfill(3) + '.' +  str((self.server_ip[6] << 8) + self.server_ip[7]).zfill(3)
 
     def get_source_server_port(self):
         """
@@ -264,7 +264,7 @@ class Packet:
         :return: Server Port address for the sender of the packet.
         :rtype: str
         """
-        return self.server_port
+        return str((self.server_port[0] << 24) + (self.server_port[1] << 16) + (self.server_port[2] << 8) + self.server_port[3])
 
     def get_source_server_address(self):
         """
@@ -272,7 +272,7 @@ class Packet:
         :return: Server address; The format is like ('192.168.001.001', '05335').
         :rtype: tuple
         """
-        return (self.get_source_server_ip(), self.server_port)
+        return (self.get_source_server_ip(), self.get_source_server_port())
 
 
 class PacketFactory:
@@ -313,11 +313,11 @@ class PacketFactory:
         narray = b''
 
         for x in nodes_array:
-            narray += bytes(str(x[0]), encoding='utf-8')
-            narray += bytes(str(x[1]), encoding='utf-8')
+            narray += bytes(str(packet_fact.ip_prettify(x[0])), encoding='utf-8')
+            narray += bytes(str(packet_fact.port_prettify(x[1])), encoding='utf-8')
 
 
-        buffer = packet_fact.set_header(1, 5, len(nodes_array)*20 + 5, source_address[0], source_address[1]) + bytes(str(type), encoding='utf-8') + bytes(str(len(nodes_array)), encoding='utf-8') + narray
+        buffer = packet_fact.set_header(1, 5, len(nodes_array)*20 + 5, packet_fact.ip_prettify(source_address[0]), packet_fact.port_prettify(source_address[1])) + bytes(str(type), encoding='utf-8') + bytes(str(len(nodes_array)), encoding='utf-8') + narray
         return Packet(buffer)
 
     @staticmethod
@@ -340,10 +340,10 @@ class PacketFactory:
         neighbour_ip = b''
 
         if(neighbour):
-            neighbour_ip = bytes(str(neighbour[0]), encoding='utf-8') + bytes(str(neighbour[1]), encoding='utf-8')
+            neighbour_ip = bytes(str(packet_fact.ip_prettify(neighbour[0])), encoding='utf-8') + bytes(str(packet_fact.port_prettify(neighbour[1])), encoding='utf-8')
             len = 23
 
-        buffer = packet_fact.set_header(1, 2, len, source_server_address[0], source_server_address[1]) + bytes(str(type), encoding='utf-8') + neighbour_ip
+        buffer = packet_fact.set_header(1, 2, len, packet_fact.ip_prettify(source_server_address[0]), packet_fact.port_prettify(source_server_address[1])) + bytes(str(type), encoding='utf-8') + neighbour_ip
 
         return Packet(buffer)
 
@@ -359,7 +359,7 @@ class PacketFactory:
 
         """
         packet_fact = PacketFactory()
-        buffer = packet_fact.set_header(1, 3, 4, source_server_address[0], source_server_address[1]) + b'JOIN'
+        buffer = packet_fact.set_header(1, 3, 4, packet_fact.ip_prettify(source_server_address[0]), packet_fact.port_prettify(source_server_address[1])) + b'JOIN'
         return Packet(buffer)
 
     @staticmethod
@@ -380,8 +380,8 @@ class PacketFactory:
         packet_fact = PacketFactory()
         if(type == 'REQ'):
             len = 23
-            ip_address = bytes(str(address[0]), encoding='utf-8')
-            port_address = bytes(str(address[1]), encoding='utf-8')
+            ip_address = bytes(str(packet_fact.ip_prettify(address[0])), encoding='utf-8')
+            port_address = bytes(str(packet_fact.port_prettify(address[1])), encoding='utf-8')
             bdy = ip_address + port_address
         else:
             len = 6
@@ -389,7 +389,7 @@ class PacketFactory:
             port_address = b''
             bdy = b'ACK'
 
-        buffer = packet_fact.set_header(1, 1, len, source_server_address[0], source_server_address[1]) + bytes(str(type), encoding='utf-8') + bdy
+        buffer = packet_fact.set_header(1, 1, len, packet_fact.ip_prettify(source_server_address[0]), packet_fact.port_prettify(source_server_address[1])) + bytes(str(type), encoding='utf-8') + bdy
         return Packet(buffer)
 
     @staticmethod
@@ -407,7 +407,7 @@ class PacketFactory:
         :rtype: Packet
         """
         packet_fact = PacketFactory()
-        buffer = packet_fact.set_header(1, 4, len(message), source_server_address[0], source_server_address[1]) + bytes(str(message), encoding='utf-8')
+        buffer = packet_fact.set_header(1, 4, len(message), packet_fact.ip_prettify(source_server_address[0]), packet_fact.port_prettify(source_server_address[1])) + bytes(str(message), encoding='utf-8')
         return Packet(buffer)
 
     @staticmethod
@@ -422,49 +422,68 @@ class PacketFactory:
         result += struct.pack("I", int(port))[::-1]
         return result
 
+    @staticmethod
+    def ip_prettify(ip):
+        return '.'.join(str(x).zfill(3) for x in ip.split('.'))
+
+    @staticmethod
+    def port_prettify(port):
+        return port.zfill(5)
 
 
-# print(struct.pack("I", 256)[1::-1])
+#Tests
+packet_fact = PacketFactory()
 
-# print(b'' + bytes('Hello', encoding='utf-8'))
-
-# buf = [0, 1, 0, 3, 0, 0, 255, 10, 0, 20, 0 , 10, 0, 1, 0, 1, 5, 5, 5, 5, 10, 10, 10, 10, 10, 10, 10, 10, 10, 0 ,3]
-#
-# print(buf)
-#
-# pac = struct.pack('<%dB' % len(buf), *buf)
-#
-# print(pac)
-# packet_fact = PacketFactory()
-# pack = packet_fact.parse_buffer(pac)
-# nodes_array = [('192.168.1.1' , '65000'), ('192.168.1.1' , '65000'), ('192.168.1.1', '65000')]
-# pack = packet_fact.new_reunion_packet('REQ', ('192.168.1.1','65000'), nodes_array)
-# pack = packet_fact.new_advertise_packet('RES', ('192.168.1.1','65000'), ('192.168.1.1','65000'))
-# pack = packet_fact.new_message_packet('Hello World!', ('192.168.1.1','65000'))
-# pack = packet_fact.new_register_packet('REQ', ('192.168.1.1','65000'), ('192.168.1.1','65000'))
-#
-#
-# new_pac = struct.unpack("<%dI" % (len(pac) // 4) ,pac)
-
-
-# buf = "{0:b}".format(1).zfill(16) + "{0:b}".format(3).zfill(16) + "{0:b}".format(250).zfill(32) + \
-#         "{0:b}".format(192).zfill(16) + "{0:b}".format(168).zfill(16) + "{0:b}".format(1).zfill(16) + \
-#         "{0:b}".format(1).zfill(16) + "{0:b}".format(5335).zfill(32) + "{0:b}".format(100).zfill(1000)
-
-
-# pack = Packet(buf)
-
-# print("{}".format(buf))
-# print("{}".format(Struct.pack(buf)))
-#
-# print("header: {}".format(pack.get_header()))
-# print("version: {}".format(pack.get_version()))
-# print("type: {}".format(pack.get_type()))
-# print("length: {}".format(pack.get_length()))
-# print("source ip: {}".format(pack.get_source_server_ip()))
-# print("source port: {}".format(pack.get_source_server_port()))
-# print("address: {}".format(pack.get_source_server_address()))
-# print("body: {}".format(pack.get_body()))
-# print("body: {}".format(pack.get_buf()))
-#
-# print(packet_fact.set_header(1, 4, 12, '192.168.001.001', 65000))
+packs = []
+counter = 1
+# ===================================
+Bytes = b'\x00\x01\x00\x04\x00\x00\x00\x0c\x00\xc0\x00\xa8\x00\x01\x00\x01\x00\x00\xfd\xe8Hello World!'
+packet = packet_fact.parse_buffer(Bytes)
+packs.append(packet)
+# ===================================
+nodes_array = [('192.168.001.001', '65000'), ('192.168.001.001', '65000'), ('192.168.001.001', '65000')]
+packet = packet_fact.new_reunion_packet('REQ', ('192.168.001.001', '65000'), nodes_array)
+packs.append(packet)
+# ===================================
+packet = packet_fact.new_advertise_packet('REQ', ('192.168.001.001', '65000'))
+packs.append(packet)
+packet = packet_fact.new_advertise_packet('RES', ('192.168.001.001', '65000'), ('192.168.001.001', '65000'))
+packs.append(packet)
+# ===================================
+packet = packet_fact.new_join_packet(('192.168.001.001', '65000'))
+packs.append(packet)
+# ===================================
+packet = packet_fact.new_register_packet('REQ', ('192.168.001.001', '65000'), ('192.168.001.001', '65000'))
+packs.append(packet)
+packet = packet_fact.new_register_packet('RES', ('192.168.001.001', '65000'))
+packs.append(packet)
+# ===================================
+packet = packet_fact.new_message_packet('Hey There!', ('192.168.001.001', '65000'))
+packs.append(packet)
+# ===================================
+for pack in packs:
+    if(counter == 1):
+        print("===================================")
+        print("Passing a buffer into the node to check the output of functions")
+    elif(counter == 2):
+        print("New reunion packet REQ same as RES")
+    elif(counter == 3 or counter == 4):
+        print("New advertise packet")
+    elif(counter == 5):
+        print("New join packet")
+    elif(counter == 6 or counter == 7):
+        print("New register packet")
+    elif(counter == 8):
+        print("New message packet")
+    print(f"for {counter}th packet")
+    counter += 1
+    print("header: {}".format(pack.get_header()))
+    print("version: {}".format(pack.get_version()))
+    print("type: {}".format(pack.get_type()))
+    print("length: {}".format(pack.get_length()))
+    print("source ip: {}".format(pack.get_source_server_ip()))
+    print("source port: {}".format(pack.get_source_server_port()))
+    print("address: {}".format(pack.get_source_server_address()))
+    print("body: {}".format(pack.get_body()))
+    print("buffer: {}".format(pack.get_buf()))
+    print("===================================")
