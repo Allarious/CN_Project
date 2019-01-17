@@ -16,7 +16,7 @@ class GraphNode:
 
     def set_parent(self, parent):
         self._parent = parent
-        pass
+
 
     def turn_off(self):
         self.turned_off = True
@@ -29,49 +29,55 @@ class GraphNode:
 
     def set_address(self, new_address):
         self._address = new_address
-        pass
+
 
     def get_parent(self):
         return self._parent
 
+
     def get_address(self):
         return self._address
+
 
     def __reset(self):
         self.set_address(None)
 
-        pass
 
     def add_child(self, child):
         self._children.append(child)
-        pass
+
 
     def get_children(self) -> list:
         return self._children
+    def get_children_num(self):
+        return len(self._children)
+
 
 
 class NetworkGraph:
     def __init__(self, root: GraphNode):
         self.root = root
         root.alive = True
+        root.set_address((0,0))
         self.nodes = [root]
 
     def find_live_node(self, sender):
-        current_level = []
-        n = None
+        father = None
+        current_level=[]
         current_level.append(self.root)
         while current_level:
             next_level = []
             for node in current_level:
-                if len(node.get_children) == 0 or len(node.get_children) == 1:
-                    n = node
-                    next_level = []
-                    break
-                else:
-                    next_level.append(node.get_children[0])
-                    next_level.append(node.get_children[1])
+                if(node not in self.get_subtree(sender)):
+                        if len(node.get_children()) == 0 or len(node.get_children()) == 1:
+                            father = node
+                            next_level = []
+                            break
+                        else:
+                            next_level.append(node.get_children[0])
+                            next_level.append(node.get_children[1])
             current_level = next_level
-        return n
+        return father
 
     """
         Here we should find a neighbour for the sender.
@@ -94,7 +100,7 @@ class NetworkGraph:
     def find_node(self, ip, port) -> GraphNode:
         node = None
         for n in self.nodes:
-            if n.get_addrress == (ip, port):
+            if n.get_address == (ip, port):
                 node = n
                 break
 
@@ -106,21 +112,55 @@ class NetworkGraph:
 
     def turn_off_node(self, node_address):
         self.find_node(node_address[0], node_address[1]).turn_off()
-
         pass
+
+    def turn_off_subtree(self,removed_node:GraphNode):
+        curr_level=removed_node.get_children()
+        while curr_level:
+             next_level=[]
+             for node in curr_level:
+                self.turn_off_node(node.get_address)
+                next_level.extend(node.get_children)
+
+             curr_level=next_level
+    def get_subtree(self,node_address):
+        curr_level = self.find_node(node_address[0],node_address[1])
+        subtree=[]
+        while curr_level:
+            next_level = []
+            for node in curr_level:
+                subtree.append(node)
+                next_level.extend(node.get_children)
+
+            curr_level = next_level
+
+        return subtree
+
 
     def remove_node(self, node_address):
-        self.nodes.remove(self.find_node(node_address[0], node_address[1]))
-        pass
+        node=self.find_node(node_address[0], node_address[1])
+
+        # remove node from its parent's children list
+        parent=self.node.get_parent()
+        parent.get_children().remove(node)
+        # turn off its subtree
+        self.turn_off_subtree(node)
+
+        self.turn_off_node(node_address)
+        node.__reset()
+        self.nodes.remove(node)
+
+
 
     def add_node(self, ip, port, father_address):
-
+        print(type(self.find_node(father_address[0], father_address[1])))
         new_node = GraphNode((ip, port))
         new_node.set_parent(self.find_node(father_address[0], father_address[1]))
         self.nodes.append(new_node)
-        new_node.get_parent().add_child(new_node)
 
-        """ Add a new node with node_address if it does not exist in our NetworkGraph and set its father.
+        self.find_node(father_address[0], father_address[1]).add_child(new_node)
+
+        """ Adda new node with node_address if it does not exist in our NetworkGraph and set its father.
 
           Warnings:
               1. Don't forget to set the new node as one of the father_address children.
@@ -137,6 +177,18 @@ class NetworkGraph:
 
           :return:
          """
-        pass
+
+
+
+root=GraphNode((0,0))
+network=NetworkGraph(root)
+for i in range(1,10):
+    parent=network.find_live_node((i,i))
+    network.add_node(i,i,parent.get_address())
+
+
+print(network.nodes)
+
+
 
 
