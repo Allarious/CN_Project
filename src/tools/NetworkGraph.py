@@ -179,16 +179,16 @@ class NetworkGraph:
          """
 
 
-
-'''root=GraphNode((0,0))
+"""
+root=GraphNode((0,0))
 network=NetworkGraph(root)
 for i in range(1,10):
     parent=network.find_live_node((i,i))
     network.add_node(i,i,parent.get_address())
 
 
-print(network.nodes)'''
+print(network.nodes)
 
-
+"""
 
 
