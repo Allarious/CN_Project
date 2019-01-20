@@ -27,7 +27,7 @@ class Node:
         self.out_buff = []
 
         try:
-            self.client = ClientSocket(self.server_ip, self.server_port, single_use=False)
+            self.client = ClientSocket(self.server_ip, server_address[1], single_use=False)
         except:
             self.out_buff.clear()
 

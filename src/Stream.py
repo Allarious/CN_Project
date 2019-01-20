@@ -1,7 +1,9 @@
 from src.tools.simpletcp.tcpserver import TCPServer
 
 from src.tools.Node import Node
+from threading import Thread
 import threading
+from time import sleep
 
 
 class Stream:
@@ -34,12 +36,16 @@ class Stream:
             :param data: The data received from the socket.
             :return:
             """
+            print(data)
             queue.put(bytes('ACK', 'utf8'))
             self._server_in_buf.append(data)
 
-        tcp_server = TCPServer(ip, port, callback)
-        thread = threading.Thread(target=tcp_server.run())
-        thread.start()
+        tcp_server = TCPServer(self.ip, port, callback)
+
+        # creating thread
+        t1 = threading.Thread(target=tcp_server.run)
+        # starting thread 2
+        t1.start()
 
     def get_server_address(self):
         """
@@ -161,3 +167,13 @@ class Stream:
                     self.send_messages_to_node(node)
             else:
                 self.send_messages_to_node(node)
+
+
+
+stream = Stream('127.0.0.1', 61324)
+node = Node(('127.0.0.1', 61324), False)
+
+print("hello")
+
+node.add_message_to_out_buff("preni")
+print(node.send_message())
