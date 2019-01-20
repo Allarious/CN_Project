@@ -18,10 +18,12 @@ class Stream:
         :param port: 5 characters
         """
 
-        ip = Node.parse_ip(ip)
-        port = Node.parse_port(port)
+        self.ip = Node.parse_ip(ip)
+        self.port = Node.parse_port(port)
 
         self._server_in_buf = []
+
+        self.nodes = []
 
         def callback(address, queue, data):
             """
@@ -35,7 +37,9 @@ class Stream:
             queue.put(bytes('ACK', 'utf8'))
             self._server_in_buf.append(data)
 
-        pass
+        tcp_server = TCPServer(ip, port, callback)
+        thread = threading.Thread(target=tcp_server.run())
+        thread.start()
 
     def get_server_address(self):
         """
@@ -43,7 +47,7 @@ class Stream:
         :return: Our TCPServer address
         :rtype: tuple
         """
-        pass
+        return self.ip, self.port
 
     def clear_in_buff(self):
         """
@@ -65,7 +69,7 @@ class Stream:
 
         :return:
         """
-        pass
+        self.nodes.append(Node(server_address, set_register_connection))
 
     def remove_node(self, node):
         """
@@ -79,7 +83,8 @@ class Stream:
 
         :return:
         """
-        pass
+        self.nodes.remove(node)
+        node.close()
 
     def get_node_by_server(self, ip, port):
         """
@@ -95,7 +100,9 @@ class Stream:
         :return: The node that input address.
         :rtype: Node
         """
-        pass
+        for node in self.nodes:
+            if node.get_server_address() == (node.parse_ip(ip), node.parse_port(port)):
+                return node
 
     def add_message_to_out_buff(self, address, message):
         """
@@ -110,7 +117,10 @@ class Stream:
 
         :return:
         """
-        pass
+        for node in self.nodes:
+            if node.get_server_address() == node.parse_address(address):
+                node.add_message_to_out_buff(message)
+                break
 
     def read_in_buf(self):
         """
@@ -134,7 +144,10 @@ class Stream:
 
         :return:
         """
-        pass
+        try:
+            node.send_message()
+        except:
+            self.remove_node(node)
 
     def send_out_buf_messages(self, only_register=False):
         """
@@ -142,4 +155,9 @@ class Stream:
 
         :return:
         """
-        pass
+        for node in self.nodes:
+            if only_register:
+                if node.register:
+                    self.send_messages_to_node(node)
+            else:
+                self.send_messages_to_node(node)

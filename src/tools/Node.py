@@ -2,7 +2,7 @@ from src.tools.simpletcp.clientsocket import ClientSocket
 
 
 class Node:
-    def __init__(self, server_address, set_root=False, set_register=False):
+    def __init__(self, server_address, set_register=False):
         """
         The Node object constructor.
 
@@ -20,10 +20,16 @@ class Node:
         self.server_ip = Node.parse_ip(server_address[0])
         self.server_port = Node.parse_port(server_address[1])
 
+        self.register = set_register
+
         print("Server Address: ", server_address)
 
         self.out_buff = []
-        pass
+
+        try:
+            self.client = ClientSocket(self.server_ip, self.server_port, single_use=False)
+        except:
+            self.out_buff.clear()
 
     def send_message(self):
         """
@@ -31,7 +37,7 @@ class Node:
 
         :return:
         """
-        pass
+        return self.client.send(self.out_buff)
 
     def add_message_to_out_buff(self, message):
         """
@@ -51,7 +57,6 @@ class Node:
 
     def get_server_address(self):
         """
-
         :return: Server address in a pretty format.
         :rtype: tuple
         """
@@ -80,3 +85,7 @@ class Node:
         :rtype: str
         """
         return str(int(port)).zfill(5)
+
+    @staticmethod
+    def parse_address(address):
+        return Node.parse_ip(address[0]), Node.parse_port(address[1])
