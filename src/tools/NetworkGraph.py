@@ -179,7 +179,7 @@ class NetworkGraph:
          """
 
 
-'''
+"""
 root=GraphNode((0,0))
 network=NetworkGraph(root)
 for i in range(1,10):
@@ -189,6 +189,6 @@ for i in range(1,10):
 
 print(network.nodes)
 
-'''
+"""
 
 
