@@ -42,7 +42,11 @@ class Peer:
         :type is_root: bool
         :type root_address: tuple
         """
-        pass
+        self.stream = Stream(server_ip, server_port)
+        self.packet_factory = PacketFactory()
+        self.user_interfarce = UserInterface()
+        t = threading.Thread(target=self.run_reunion_daemon)
+        t.start()
 
     def start_user_interface(self):
         """
@@ -50,7 +54,7 @@ class Peer:
 
         :return:
         """
-        pass
+        self.user_interfarce.run()
 
     def handle_user_interface_buffer(self):
         """
@@ -142,7 +146,17 @@ class Peer:
         :type packet Packet
 
         """
-        pass
+        type = packet.get_type()
+        if(type == 1):
+            self.__handle_register_packet(packet)
+        elif(type == 2):
+            self.__handle_advertise_packet(packet)
+        elif(type == 3):
+            self.__handle_join_packet(packet)
+        elif(type == 4):
+            self.__handle_message_packet(packet)
+        elif(type == 5):
+            self.__handle_reunion_packet(packet)
 
     def __check_registered(self, source_address):
         """
