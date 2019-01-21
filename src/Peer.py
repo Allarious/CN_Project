@@ -275,7 +275,21 @@ class Peer:
                 self.stream.add_message_to_out_buff(packet.get_source_server_address(),new_packet)
                 self.network_graph.add_node(packet.get_source_server_ip(),packet.get_source_server_port(),parent)
 
-        pass
+        else:
+            if not self.is_root:
+                buff = packet.get_buf()[23:]
+                buff = str(buff)
+                buff = buff[2:]
+                buff = buff[:len(buff)-1]
+                ip = buff[:15]
+                port = buff[15:20]
+                print(ip, port)
+                self.stream.add_node(server_address=(ip, int(port)))
+                self.stream.get_parent_node()\
+                    .add_message_to_out_buff(PacketFactory.new_join_packet(self.stream.get_server_address()))
+                print(self.stream.get_parent_node().out_buff)
+                self.stream.get_parent_node().send_message()
+                self.t.run()
 
     def __handle_register_packet(self, packet):
         """
