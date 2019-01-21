@@ -396,12 +396,12 @@ class Peer:
         pass
 
 
-peer = Peer('127.0.0.1', 65010)
-packet_fact = PacketFactory()
-
-nodes_array = [('127.0.0.3', '65000'), ('127.0.0.2', '65000'), ('127.0.0.1', '65010')]
-packet = packet_fact.new_reunion_packet('REQ', ('192.168.001.004', '65000'), nodes_array)
-
-
-
-peer.handle_reunion_packet(packet)
+# peer = Peer('127.0.0.1', 65010)
+# packet_fact = PacketFactory()
+#
+# nodes_array = [('127.0.0.3', '65000'), ('127.0.0.2', '65000'), ('127.0.0.1', '65010')]
+# packet = packet_fact.new_reunion_packet('REQ', ('192.168.001.004', '65000'), nodes_array)
+# 
+#
+#
+# peer.handle_reunion_packet(packet)
