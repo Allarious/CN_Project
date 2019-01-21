@@ -62,7 +62,8 @@ class Peer:
             self.reunion_mode = None
             self.last_reunion_sent_time = None
         t = threading.Thread(target=self.run_reunion_daemon)
-        t.start()
+        self.root_address = root_address
+        #TODO start daemon after getting the advertise! t.start()
 
     def start_user_interface(self):
         """
@@ -208,16 +209,23 @@ class Peer:
         :type packet Packet
 
         """
+        if(packet.get_version() != 1):
+            print("version not supported.", file=sys.stderr)
+            raise ValueError
+        if(packet.get_type() > 5 or packet.get_type() < 1):
+            print("type of packet unknown.", file=sys.stderr)
+            raise ValueError
+
         type = packet.get_type()
-        if (type == 1):
+        if(type == 1):
             self.__handle_register_packet(packet)
-        elif (type == 2):
+        elif(type == 2):
             self.__handle_advertise_packet(packet)
-        elif (type == 3):
+        elif(type == 3):
             self.__handle_join_packet(packet)
-        elif (type == 4):
+        elif(type == 4):
             self.__handle_message_packet(packet)
-        elif (type == 5):
+        elif(type == 5):
             self.__handle_reunion_packet(packet)
 
     def __check_registered(self, source_address):
@@ -261,7 +269,12 @@ class Peer:
 
         :return:
         """
-        pass
+        if(packet.get_res_or_req() == "REQ"):
+            if(self.is_root):
+                print("do sth!")
+
+        if(packet.get_res_or_req() == "RES"):
+            print("do sth else!")
 
     def __handle_register_packet(self, packet):
         """
@@ -311,7 +324,7 @@ class Peer:
 
         :return:
         """
-        pass
+        self.stream.broadcast_to_none_registers(packet.get_buf())
 
     def __handle_reunion_packet(self, packet):
         """
@@ -336,7 +349,62 @@ class Peer:
         :param packet: Arrived reunion packet
         :return:
         """
-        pass
+        res = packet.get_res_or_req()
+        body = str(packet.get_buf()[25:])
+        ips_str = body[2:len(body)-1]
+        ips = []
+        ports = []
+        for i in range(0, len(ips_str), 20):
+            ips.append(ips_str[i:i+15])
+            ports.append(ips_str[i+15:i+20])
+
+
+        if res == "REQ":
+
+            if self.is_root:
+
+                reversed_ips = ips[::-1]
+                reversed_ports = ports[::-1]
+
+                nodes_array= []
+
+                for i in range(len(reversed_ips)):
+                    nodes_array.append((reversed_ips[i], reversed_ports[i]))
+
+                new_packet = self.packet_factory.new_reunion_packet("RES", self.stream.get_server_address(), nodes_array)
+
+                #TODO send the packet
+            else:
+
+                ips.append(self.stream.get_server_address()[0])
+                ports.append(self.stream.get_server_address()[1])
+
+                nodes_array = []
+
+                for i in range(len(ips)):
+                    nodes_array.append((ips[i], ports[i]))
+
+                new_packet = self.packet_factory.new_reunion_packet("REQ", self.stream.get_server_address(), nodes_array)
+
+        elif res == "RES":
+            if ips[len(ips)-1] == self.stream.get_server_address()[0] \
+                    and\
+                    ports[len(ports)-1] == self.stream.get_server_address()[1]:
+                ips.pop(len(ips)-1)
+                ports.pop(len(ports)-1)
+
+                nodes_array = []
+
+                for i in range(len(ips)):
+                    nodes_array.append((ips[i], ports[i]))
+
+                new_packet = self.packet_factory.new_reunion_packet("REQ", self.stream.get_server_address(), nodes_array)
+
+                if len(ips) == 0:
+                    pass
+                else:
+                    #TODO send the packet
+                    pass
 
     def __handle_join_packet(self, packet):
         """
