@@ -48,6 +48,13 @@ class Peer:
         self.user_interfarce = UserInterface()
         self.is_root = is_root
         self.t = threading.Thread(target=self.run_reunion_daemon)
+        self.root_address=root_address
+        self.neighbours=[]
+        if(self.is_root):
+            self.root_node=GraphNode(self.root_address)
+            self.network_graph=NetworkGraph(self.root_node)
+        t = threading.Thread(target=self.run_reunion_daemon)
+        #TODO start daemon after getting the advertise! so there it goes be t.start()
 
     def start_user_interface(self):
         """
@@ -132,6 +139,8 @@ class Peer:
 
         :return:
         """
+        message=broadcast_packet.get_buf()
+        self.stream.add_message_to_all_buffs(message)
         pass
 
     def handle_packet(self, packet):
@@ -147,7 +156,6 @@ class Peer:
         :type packet Packet
 
         """
-
         if(packet.get_version() != 1):
             print("version not supported.", file=sys.stderr)
             raise ValueError
@@ -176,6 +184,7 @@ class Peer:
 
         :return:
         """
+       # if(self.is_root)
         pass
 
     def __handle_advertise_packet(self, packet):
@@ -242,6 +251,14 @@ class Peer:
         :return: Whether is address in our neighbours or not.
         :rtype: bool
         """
+        if(self.root_address!=address):
+            if(self.stream.get_node_by_server(address[0],address[1])):
+                return True
+            else:
+                return False
+        else:
+            return False
+
         pass
 
     def __handle_message_packet(self, packet):
@@ -326,9 +343,12 @@ class Peer:
                 print(packet.get_buf())
                 print(new_packet.get_buf())
         elif res == "RES":
-            if ips[len(ips)] == self.stream.get_server_address()[0] and ports[len(ports)] == self.stream.get_server_address()[1]:
-                ips.pop(len(ips))
-                ports.pop(len(ports))
+            print(ips[len(ips)-1], ports[len(ports)-1], self.stream.get_server_address())
+            if ips[len(ips)-1] == self.stream.get_server_address()[0] \
+                    and\
+                    ports[len(ports)-1] == self.stream.get_server_address()[1]:
+                ips.pop(len(ips)-1)
+                ports.pop(len(ports)-1)
 
                 nodes_array = []
 
@@ -337,10 +357,12 @@ class Peer:
 
                 new_packet = packet_fact.new_reunion_packet("REQ", self.stream.get_server_address(), nodes_array)
 
+                print(new_packet.get_buf())
+
                 if len(ips) == 0:
                     pass
                 else:
-                    #TODO send packet to next
+                    #TODO send the packet
                     pass
 
     def __handle_join_packet(self, packet):
@@ -368,14 +390,18 @@ class Peer:
         :param sender: Sender of the packet
         :return: The specified neighbour for the sender; The format is like ('192.168.001.001', '05335').
         """
+        return self.network_graph.find_live_node(sender)
+
+
         pass
 
 
 peer = Peer('127.0.0.1', 65010)
-
 packet_fact = PacketFactory()
 
-nodes_array = [('192.168.001.002', '65000'), ('192.168.001.003', '65000'), ('192.168.001.004', '65000')]
-packet = packet_fact.new_reunion_packet('REQ', ('192.168.001.001', '65000'), nodes_array)
+nodes_array = [('127.0.0.3', '65000'), ('127.0.0.2', '65000'), ('127.0.0.1', '65010')]
+packet = packet_fact.new_reunion_packet('REQ', ('192.168.001.004', '65000'), nodes_array)
+
+
 
 peer.handle_reunion_packet(packet)

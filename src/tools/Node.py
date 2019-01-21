@@ -65,6 +65,9 @@ class Node:
         """
         return self.server_ip, self.server_port
 
+    def is_register(self):
+        return self.register
+
     @staticmethod
     def parse_ip(ip):
         """

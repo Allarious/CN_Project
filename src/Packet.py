@@ -437,59 +437,59 @@ class PacketFactory:
         return port.zfill(5)
 
 
-#Tests
-packet_fact = PacketFactory()
-
-packs = []
-counter = 1
-# ===================================
-Bytes = b'\x00\x01\x00\x04\x00\x00\x00\x0c\x00\xc0\x00\xa8\x00\x01\x00\x01\x00\x00\xfd\xe8Hello World!'
-packet = packet_fact.parse_buffer(Bytes)
-packs.append(packet)
-# ===================================
-nodes_array = [('192.168.001.001', '65000'), ('192.168.001.001', '65000'), ('192.168.001.001', '65000')]
-packet = packet_fact.new_reunion_packet('REQ', ('192.168.001.001', '65000'), nodes_array)
-packs.append(packet)
-# ===================================
-packet = packet_fact.new_advertise_packet('REQ', ('192.168.001.001', '65000'))
-packs.append(packet)
-packet = packet_fact.new_advertise_packet('RES', ('192.168.001.001', '65000'), ('192.168.001.001', '65000'))
-packs.append(packet)
-# ===================================
-packet = packet_fact.new_join_packet(('192.168.001.001', '65000'))
-packs.append(packet)
-# ===================================
-packet = packet_fact.new_register_packet('REQ', ('192.168.001.001', '65000'), ('192.168.001.001', '65000'))
-packs.append(packet)
-packet = packet_fact.new_register_packet('RES', ('192.168.001.001', '65000'))
-packs.append(packet)
-# ===================================
-packet = packet_fact.new_message_packet('Hey There!', ('192.168.001.001', '65000'))
-packs.append(packet)
-# ===================================
-for pack in packs:
-    if(counter == 1):
-        print("===================================")
-        print("Passing a buffer into the node to check the output of functions")
-    elif(counter == 2):
-        print("New reunion packet REQ same as RES")
-    elif(counter == 3 or counter == 4):
-        print("New advertise packet")
-    elif(counter == 5):
-        print("New join packet")
-    elif(counter == 6 or counter == 7):
-        print("New register packet")
-    elif(counter == 8):
-        print("New message packet")
-    print(f"for {counter}th packet")
-    counter += 1
-    print("header: {}".format(pack.get_header()))
-    print("version: {}".format(pack.get_version()))
-    print("type: {}".format(pack.get_type()))
-    print("length: {}".format(pack.get_length()))
-    print("source ip: {}".format(pack.get_source_server_ip()))
-    print("source port: {}".format(pack.get_source_server_port()))
-    print("address: {}".format(pack.get_source_server_address()))
-    print("body: {}".format(pack.get_body()))
-    print("buffer: {}".format(pack.get_buf()))
-    print("===================================")
+# #Tests
+# packet_fact = PacketFactory()
+#
+# packs = []
+# counter = 1
+# # ===================================
+# Bytes = b'\x00\x01\x00\x04\x00\x00\x00\x0c\x00\xc0\x00\xa8\x00\x01\x00\x01\x00\x00\xfd\xe8Hello World!'
+# packet = packet_fact.parse_buffer(Bytes)
+# packs.append(packet)
+# # ===================================
+# nodes_array = [('192.168.001.001', '65000'), ('192.168.001.001', '65000'), ('192.168.001.001', '65000')]
+# packet = packet_fact.new_reunion_packet('REQ', ('192.168.001.001', '65000'), nodes_array)
+# packs.append(packet)
+# # ===================================
+# packet = packet_fact.new_advertise_packet('REQ', ('192.168.001.001', '65000'))
+# packs.append(packet)
+# packet = packet_fact.new_advertise_packet('RES', ('192.168.001.001', '65000'), ('192.168.001.001', '65000'))
+# packs.append(packet)
+# # ===================================
+# packet = packet_fact.new_join_packet(('192.168.001.001', '65000'))
+# packs.append(packet)
+# # ===================================
+# packet = packet_fact.new_register_packet('REQ', ('192.168.001.001', '65000'), ('192.168.001.001', '65000'))
+# packs.append(packet)
+# packet = packet_fact.new_register_packet('RES', ('192.168.001.001', '65000'))
+# packs.append(packet)
+# # ===================================
+# packet = packet_fact.new_message_packet('Hey There!', ('192.168.001.001', '65000'))
+# packs.append(packet)
+# # ===================================
+# for pack in packs:
+#     if(counter == 1):
+#         print("===================================")
+#         print("Passing a buffer into the node to check the output of functions")
+#     elif(counter == 2):
+#         print("New reunion packet REQ same as RES")
+#     elif(counter == 3 or counter == 4):
+#         print("New advertise packet")
+#     elif(counter == 5):
+#         print("New join packet")
+#     elif(counter == 6 or counter == 7):
+#         print("New register packet")
+#     elif(counter == 8):
+#         print("New message packet")
+#     print(f"for {counter}th packet")
+#     counter += 1
+#     print("header: {}".format(pack.get_header()))
+#     print("version: {}".format(pack.get_version()))
+#     print("type: {}".format(pack.get_type()))
+#     print("length: {}".format(pack.get_length()))
+#     print("source ip: {}".format(pack.get_source_server_ip()))
+#     print("source port: {}".format(pack.get_source_server_port()))
+#     print("address: {}".format(pack.get_source_server_address()))
+#     print("body: {}".format(pack.get_body()))
+#     print("buffer: {}".format(pack.get_buf()))
+#     print("===================================")

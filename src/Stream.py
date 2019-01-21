@@ -129,6 +129,11 @@ class Stream:
                 node.add_message_to_out_buff(message)
                 break
 
+    def add_message_to_all_buffs(self,message):
+        for node in self.nodes:
+            if(not(node.is_register())):
+                node.add_message_to_out_buff(message)
+
     def read_in_buf(self):
         """
         Only returns the input buffer of our TCPServer.
