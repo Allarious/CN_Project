@@ -5,6 +5,7 @@ from src.tools.SemiNode import SemiNode
 from src.tools.NetworkGraph import NetworkGraph, GraphNode
 import time
 import threading
+import sys
 
 """
     Peer is our main object in this project.
@@ -45,8 +46,8 @@ class Peer:
         self.stream = Stream(server_ip, server_port)
         self.packet_factory = PacketFactory()
         self.user_interfarce = UserInterface()
-        t = threading.Thread(target=self.run_reunion_daemon)
-        t.start()
+        self.is_root = is_root
+        self.t = threading.Thread(target=self.run_reunion_daemon)
 
     def start_user_interface(self):
         """
@@ -146,6 +147,14 @@ class Peer:
         :type packet Packet
 
         """
+
+        if(packet.get_version() != 1):
+            print("version not supported.", file=sys.stderr)
+            raise ValueError
+        if(packet.get_type() > 5 or packet.get_type() < 1):
+            print("type of packet unknown.", file=sys.stderr)
+            raise ValueError
+
         type = packet.get_type()
         if(type == 1):
             self.__handle_register_packet(packet)
@@ -198,7 +207,12 @@ class Peer:
 
         :return:
         """
-        pass
+        if(packet.get_res_or_req() == "REQ"):
+            if(self.is_root):
+                print("do sth!")
+
+        if(packet.get_res_or_req() == "RES"):
+            print("do sth else!")
 
     def __handle_register_packet(self, packet):
         """
@@ -244,9 +258,9 @@ class Peer:
 
         :return:
         """
-        pass
+        self.stream.broadcast_to_none_registers(packet.get_buf())
 
-    def __handle_reunion_packet(self, packet):
+    def handle_reunion_packet(self, packet):
         """
         In this function we should handle Reunion packet was just arrived.
 
@@ -269,7 +283,65 @@ class Peer:
         :param packet: Arrived reunion packet
         :return:
         """
-        pass
+        res = packet.get_res_or_req()
+        body = str(packet.get_buf()[25:])
+        ips_str = body[2:len(body)-1]
+        ips = []
+        ports = []
+        for i in range(0, len(ips_str), 20):
+            ips.append(ips_str[i:i+15])
+            ports.append(ips_str[i+15:i+20])
+
+
+        if res == "REQ":
+
+            if self.is_root:
+
+                reversed_ips = ips[::-1]
+                reversed_ports = ports[::-1]
+
+                nodes_array= []
+
+                for i in range(len(reversed_ips)):
+                    nodes_array.append((reversed_ips[i], reversed_ports[i]))
+
+                new_packet = packet_fact.new_reunion_packet("RES", self.stream.get_server_address(), nodes_array)
+
+                print(packet.get_buf())
+                print(new_packet.get_buf())
+
+                #TODO send the packet
+            else:
+
+                ips.append(self.stream.get_server_address()[0])
+                ports.append(self.stream.get_server_address()[1])
+
+                nodes_array = []
+
+                for i in range(len(ips)):
+                    nodes_array.append((ips[i], ports[i]))
+
+                new_packet = packet_fact.new_reunion_packet("REQ", self.stream.get_server_address(), nodes_array)
+
+                print(packet.get_buf())
+                print(new_packet.get_buf())
+        elif res == "RES":
+            if ips[len(ips)] == self.stream.get_server_address()[0] and ports[len(ports)] == self.stream.get_server_address()[1]:
+                ips.pop(len(ips))
+                ports.pop(len(ports))
+
+                nodes_array = []
+
+                for i in range(len(ips)):
+                    nodes_array.append((ips[i], ports[i]))
+
+                new_packet = packet_fact.new_reunion_packet("REQ", self.stream.get_server_address(), nodes_array)
+
+                if len(ips) == 0:
+                    pass
+                else:
+                    #TODO send packet to next
+                    pass
 
     def __handle_join_packet(self, packet):
         """
@@ -297,3 +369,13 @@ class Peer:
         :return: The specified neighbour for the sender; The format is like ('192.168.001.001', '05335').
         """
         pass
+
+
+peer = Peer('127.0.0.1', 65010)
+
+packet_fact = PacketFactory()
+
+nodes_array = [('192.168.001.002', '65000'), ('192.168.001.003', '65000'), ('192.168.001.004', '65000')]
+packet = packet_fact.new_reunion_packet('REQ', ('192.168.001.001', '65000'), nodes_array)
+
+peer.handle_reunion_packet(packet)

@@ -39,6 +39,7 @@ class Stream:
             print(data)
             queue.put(bytes('ACK', 'utf8'))
             self._server_in_buf.append(data)
+            print(self._server_in_buf)
 
         tcp_server = TCPServer(self.ip, port, callback)
 
@@ -169,11 +170,30 @@ class Stream:
                 self.send_messages_to_node(node)
 
 
+    def broadcast_to_none_registers(self, message):
 
-stream = Stream('127.0.0.1', 61324)
-node = Node(('127.0.0.1', 61324), False)
 
-print("hello")
+        """ this function broadcasts the given message to none registered nodes """
 
-node.add_message_to_out_buff("preni")
-print(node.send_message())
+        for node in self.nodes:
+            if not node.register:
+                node.out_buff.clear()
+                node.add_message_to_out_buff(message)
+                node.send_message()
+
+
+
+#Tests
+#build a stream, node and info via node
+
+# stream = Stream('127.0.0.1', 61321)
+# node = Node(('127.0.0.1', 61321), False)
+#
+# node.add_message_to_out_buff("preni")
+# print(node.send_message())
+# node.add_message_to_out_buff("yoho")
+# print(node.send_message())
+# node.add_message_to_out_buff("jam it out")
+# print(node.send_message())
+# node.add_message_to_out_buff("hi hi")
+# print(node.send_message())

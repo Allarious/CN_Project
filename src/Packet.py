@@ -274,6 +274,12 @@ class Packet:
         """
         return (self.get_source_server_ip(), self.get_source_server_port())
 
+    def get_res_or_req(self):
+        if(self.get_body()[3] == 81):
+            return 'REQ'
+        else:
+            return 'RES'
+
 
 class PacketFactory:
     """
@@ -317,7 +323,7 @@ class PacketFactory:
             narray += bytes(str(packet_fact.port_prettify(x[1])), encoding='utf-8')
 
 
-        buffer = packet_fact.set_header(1, 5, len(nodes_array)*20 + 5, packet_fact.ip_prettify(source_address[0]), packet_fact.port_prettify(source_address[1])) + bytes(str(type), encoding='utf-8') + bytes(str(len(nodes_array)), encoding='utf-8') + narray
+        buffer = packet_fact.set_header(1, 5, len(nodes_array)*20 + 5, packet_fact.ip_prettify(source_address[0]), packet_fact.port_prettify(source_address[1])) + bytes(str(type), encoding='utf-8') + bytes(str(len(nodes_array)).zfill(2), encoding='utf-8') + narray
         return Packet(buffer)
 
     @staticmethod
