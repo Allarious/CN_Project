@@ -63,7 +63,6 @@ class Peer:
             self.reunion_mode = None
             self.last_reunion_sent_time = None
         t = threading.Thread(target=self.run_reunion_daemon)
-        t.start()
 
     def start_user_interface(self):
         """
@@ -169,17 +168,13 @@ class Peer:
                 if self.reunion_mode == "acceptance":
                     if (datetime.now() - self.last_reunion_sent_time) >= timedelta(seconds=4):
                         nodes_array = [(self.server_ip, self.server_port)]
-                        new_packet = self.packet_factory.new_reunion_packet("REQ", (self.server_ip, self.server_port),
-                                                                            nodes_array)
-#TODO: access to parent from streem
-                        #      self.stream.add_message_to_out_buff(self.graph_node.get_parent(), new_packet.get_buf())
+                        new_packet = self.packet_factory.new_reunion_packet("REQ", (self.server_ip, self.server_port), nodes_array)
+                        self.stream.add_message_to_out_buff(self.stream.get_parent_address(),new_packet.get_buf())
                         self.last_reunion_sent_time = datetime.now()
                         self.reunion_mode = "pending"
                 elif self.reunion_mode == "pending":
                     if (datetime.now() - self.last_reunion_sent_time) > timedelta(seconds=4):
-                        advertise_packet = self.packet_factory.new_advertise_packet("REQ",
-                                                                                    (self.server_ip,
-                                                                                     self.server_port))
+                        advertise_packet = self.packet_factory.new_advertise_packet("REQ",(self.server_ip, self.server_port))
                         self.stream.add_message_to_out_buff(self.root_address, advertise_packet.get_buf())
 
     def send_broadcast_packet(self, broadcast_packet):
@@ -212,6 +207,7 @@ class Peer:
         :type packet Packet
 
         """
+        
         type = packet.get_type()
         if packet.get_version() != 1:
             print("unsupported version", file=sys.stderr)
@@ -392,8 +388,7 @@ class Peer:
 
                 new_packet = self.packet_factory.new_reunion_packet("REQ", self.stream.get_server_address(),
                                                                     nodes_array)
-           #TODO: get parent address
-                #   parent_address
+                parent_address=self.stream.get_parent_address
                 self.stream.add_message_to_out_buff(parent_address,new_packet)
 
         elif res == "RES":
@@ -412,9 +407,10 @@ class Peer:
                                                                     nodes_array)
 
                 if len(ips) == 0:
-                    pass
+                    self.reunion_mode="acceptance"
                 else:
-                    # TODO send the packet
+                    node_address = (SemiNode.parse_ip(nodes_array[0][0]), SemiNode.parse_port(nodes_array[0][1]))
+                    self.stream.add_message_to_out_buff(node_address,new_packet)
                     pass
         pass
 
@@ -444,5 +440,3 @@ class Peer:
         :return: The specified neighbour for the sender; The format is like ('192.168.001.001', '05335').
         """
         return self.network_graph.find_live_node(sender)
-
-        pass
