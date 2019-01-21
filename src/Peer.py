@@ -5,6 +5,8 @@ from src.tools.SemiNode import SemiNode
 from src.tools.NetworkGraph import NetworkGraph, GraphNode
 import time
 import threading
+from datetime import datetime
+from datetime import timedelta
 
 """
     Peer is our main object in this project.
@@ -45,12 +47,19 @@ class Peer:
         self.stream = Stream(server_ip, server_port)
         self.packet_factory = PacketFactory()
         self.user_interfarce = UserInterface()
-        self.is_root=is_root
-        self.root_address=root_address
-        self.neighbours=[]
-        if(self.is_root):
-            self.root_node=GraphNode(self.root_address)
-            self.network_graph=NetworkGraph(self.root_node)
+        self.server_ip = SemiNode.parse_ip(server_ip)
+        self.server_port = SemiNode.parse_port(server_port)
+        self.is_root = is_root
+        self.root_address = (SemiNode.parse_ip(root_address[0]), SemiNode.parse_port(root_address[1]))
+        self.neighbours = []
+        if (self.is_root):
+            self.root_node = GraphNode(self.root_address)
+            self.network_graph = NetworkGraph(self.root_node)
+            self.reunions_arrival_time = dict()
+        else:
+            self.graph_node = GraphNode((server_ip, server_port))
+            self.reunion_mode = None
+            self.last_reunion_time = None
         t = threading.Thread(target=self.run_reunion_daemon)
         t.start()
 
@@ -95,6 +104,16 @@ class Peer:
 
         :return:
         """
+        while True:
+            for buffer in self.stream.read_in_buf():
+                packet = self.packet_factory.parse_buffer(buffer)
+                self.handle_packet(packet)
+
+            # TODO: user interface buffer parse
+
+            self.stream.send_out_buf_messages()
+            time.sleep(2)
+
         pass
 
     def run_reunion_daemon(self):
@@ -122,7 +141,31 @@ class Peer:
 
         :return:
         """
-        pass
+
+        # TODO: this part is definitely gonna cause a lot of bugs,im not sure with the delays and 4 seconds
+
+        while True:
+            if self.is_root:
+                for address, last_reunion_time in self.reunions_arrival_time.items():
+                    if (datetime.now() - last_reunion_time) > timedelta(seconds=4):
+                        self.network_graph.turn_off_node(address)
+                        self.network_graph.turn_off_subtree(address)
+                        self.network_graph.remove_node(address)
+            else:
+                if self.reunion_mode == "acceptance":
+                    if (datetime.now() - self.last_reunion_time) >= timedelta(seconds=4):
+                        nodes_array = [(self.server_ip, self.server_port)]
+                        new_packet = self.packet_factory.new_reunion_packet("REQ", (self.server_ip, self.server_port),
+                                                                            nodes_array)
+                        self.stream.add_message_to_out_buff(self.graph_node.get_parent(), new_packet.get_buf())
+                        self.last_reunion_time = datetime.now()
+                        self.reunion_mode = "pending"
+                if self.reunion_mode == "pending":
+                    if (datetime.now() - self.last_reunion_time) > timedelta(seconds=4):
+                        advertise_packet = self.packet_factory.new_advertise_packet("REQ",
+                                                                                    (self.server_ip, self.server_port),
+                                                                                    self.root_address)
+                        self.stream.add_message_to_out_buff(self.root_address, advertise_packet.get_buf())
 
     def send_broadcast_packet(self, broadcast_packet):
         """
@@ -137,7 +180,7 @@ class Peer:
 
         :return:
         """
-        message=broadcast_packet.get_buf()
+        message = broadcast_packet.get_buf()
         self.stream.add_message_to_all_buffs(message)
         pass
 
@@ -155,15 +198,15 @@ class Peer:
 
         """
         type = packet.get_type()
-        if(type == 1):
+        if (type == 1):
             self.__handle_register_packet(packet)
-        elif(type == 2):
+        elif (type == 2):
             self.__handle_advertise_packet(packet)
-        elif(type == 3):
+        elif (type == 3):
             self.__handle_join_packet(packet)
-        elif(type == 4):
+        elif (type == 4):
             self.__handle_message_packet(packet)
-        elif(type == 5):
+        elif (type == 5):
             self.__handle_reunion_packet(packet)
 
     def __check_registered(self, source_address):
@@ -175,7 +218,7 @@ class Peer:
 
         :return:
         """
-       # if(self.is_root)
+        # if(self.is_root)
         pass
 
     def __handle_advertise_packet(self, packet):
@@ -237,8 +280,8 @@ class Peer:
         :return: Whether is address in our neighbours or not.
         :rtype: bool
         """
-        if(self.root_address!=address):
-            if(self.stream.get_node_by_server(address[0],address[1])):
+        if (self.root_address != address):
+            if (self.stream.get_node_by_server(address[0], address[1])):
                 return True
             else:
                 return False
@@ -314,6 +357,5 @@ class Peer:
         :return: The specified neighbour for the sender; The format is like ('192.168.001.001', '05335').
         """
         return self.network_graph.find_live_node(sender)
-
 
         pass

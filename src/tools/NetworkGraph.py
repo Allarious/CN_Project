@@ -25,7 +25,7 @@ class GraphNode:
     def turn_on(self):
         self.turned_off = False
 
-    def is_truned_off(self):
+    def is_turned_off(self):
         return self.turned_off
 
     def set_address(self, new_address):
@@ -70,6 +70,7 @@ class NetworkGraph:
             next_level = []
             for node in current_level:
                 if(node not in self.get_subtree(sender)):
+                    if not(node.is_turned_off()):
                         if len(node.get_children()) == 0 or len(node.get_children()) == 1:
                             father = node
                             next_level = []
@@ -115,7 +116,8 @@ class NetworkGraph:
         self.find_node(node_address[0], node_address[1]).turn_off()
         pass
 
-    def turn_off_subtree(self,removed_node:GraphNode):
+    def turn_off_subtree(self,removed_node_address):
+        removed_node=self.find_node(removed_node_address[0],removed_node_address[1])
         curr_level=removed_node.get_children()
         while curr_level:
              next_level=[]
