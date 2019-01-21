@@ -1,7 +1,9 @@
 from src.tools.simpletcp.tcpserver import TCPServer
 
 from src.tools.Node import Node
+from threading import Thread
 import threading
+from time import sleep
 
 
 class Stream:
@@ -34,12 +36,17 @@ class Stream:
             :param data: The data received from the socket.
             :return:
             """
+            print(data)
             queue.put(bytes('ACK', 'utf8'))
             self._server_in_buf.append(data)
+            print(self._server_in_buf)
 
-        tcp_server = TCPServer(ip, port, callback)
-        thread = threading.Thread(target=tcp_server.run())
-        thread.start()
+        tcp_server = TCPServer(self.ip, port, callback)
+
+        # creating thread
+        t1 = threading.Thread(target=tcp_server.run)
+        # starting thread 2
+        t1.start()
 
     def get_server_address(self):
         """
@@ -166,3 +173,32 @@ class Stream:
                     self.send_messages_to_node(node)
             else:
                 self.send_messages_to_node(node)
+
+
+    def broadcast_to_none_registers(self, message):
+
+
+        """ this function broadcasts the given message to none registered nodes """
+
+        for node in self.nodes:
+            if not node.register:
+                node.out_buff.clear()
+                node.add_message_to_out_buff(message)
+                node.send_message()
+
+
+
+#Tests
+#build a stream, node and info via node
+
+# stream = Stream('127.0.0.1', 61321)
+# node = Node(('127.0.0.1', 61321), False)
+#
+# node.add_message_to_out_buff("preni")
+# print(node.send_message())
+# node.add_message_to_out_buff("yoho")
+# print(node.send_message())
+# node.add_message_to_out_buff("jam it out")
+# print(node.send_message())
+# node.add_message_to_out_buff("hi hi")
+# print(node.send_message())

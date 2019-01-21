@@ -5,7 +5,6 @@ import time
 class UserInterface(threading.Thread):
     buffer = []
 
-
 def run(self):
     """
     Which the user or client sees and works with.

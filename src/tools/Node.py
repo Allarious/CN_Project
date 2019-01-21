@@ -27,7 +27,7 @@ class Node:
         self.out_buff = []
 
         try:
-            self.client = ClientSocket(self.server_ip, self.server_port, single_use=False)
+            self.client = ClientSocket(self.server_ip, server_address[1], single_use=False)
         except:
             self.out_buff.clear()
 
@@ -37,7 +37,10 @@ class Node:
 
         :return:
         """
-        return self.client.send(self.out_buff)
+
+        out_buff =  self.client.send("".join(self.out_buff))
+        self.out_buff.clear()
+        return out_buff
 
     def add_message_to_out_buff(self, message):
         """
