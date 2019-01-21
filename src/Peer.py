@@ -169,7 +169,7 @@ class Peer:
                     if (datetime.now() - self.last_reunion_sent_time) >= timedelta(seconds=4):
                         nodes_array = [(self.server_ip, self.server_port)]
                         new_packet = self.packet_factory.new_reunion_packet("REQ", (self.server_ip, self.server_port), nodes_array)
-                        self.stream.add_message_to_out_buff(self.stream.get_parent_address(),new_packet.get_buf())
+                        self.stream.add_message_to_out_buff(self.stream.get_parent_address().get_server_address(),new_packet.get_buf())
                         self.last_reunion_sent_time = datetime.now()
                         self.reunion_mode = "pending"
                 elif self.reunion_mode == "pending":
@@ -395,7 +395,7 @@ class Peer:
 
                 new_packet = self.packet_factory.new_reunion_packet("REQ", self.stream.get_server_address(),
                                                                     nodes_array)
-                parent_address=self.stream.get_parent_address
+                parent_address=self.stream.get_parent_address.get_server_address()
                 self.stream.add_message_to_out_buff(parent_address,new_packet)
 
         elif res == "RES":
