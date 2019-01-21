@@ -277,7 +277,7 @@ class Peer:
         """
         self.stream.broadcast_to_none_registers(packet.get_buf())
 
-    def handle_reunion_packet(self, packet):
+    def __handle_reunion_packet(self, packet):
         """
         In this function we should handle Reunion packet was just arrived.
 
@@ -323,7 +323,6 @@ class Peer:
                     nodes_array.append((reversed_ips[i], reversed_ports[i]))
 
                 new_packet = self.packet_factory.new_reunion_packet("RES", self.stream.get_server_address(), nodes_array)
-
 
                 #TODO send the packet
             else:
