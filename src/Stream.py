@@ -185,13 +185,11 @@ class Stream:
                 self.send_messages_to_node(node)
 
 
-    def broadcast_to_none_registers(self, message):
-
-
+    def broadcast_to_none_registers(self, message, address):
         """ this function broadcasts the given message to none registered nodes """
 
         for node in self.nodes:
-            if not node.register:
+            if not node.register and node.get_server_address() != address:
                 node.out_buff.clear()
                 node.add_message_to_out_buff(message)
                 node.send_message()
