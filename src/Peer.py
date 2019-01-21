@@ -322,7 +322,7 @@ class Peer:
                 for i in range(len(reversed_ips)):
                     nodes_array.append((reversed_ips[i], reversed_ports[i]))
 
-                new_packet = packet_fact.new_reunion_packet("RES", self.stream.get_server_address(), nodes_array)
+                new_packet = self.packet_factory.new_reunion_packet("RES", self.stream.get_server_address(), nodes_array)
 
                 print(packet.get_buf())
                 print(new_packet.get_buf())
@@ -338,7 +338,7 @@ class Peer:
                 for i in range(len(ips)):
                     nodes_array.append((ips[i], ports[i]))
 
-                new_packet = packet_fact.new_reunion_packet("REQ", self.stream.get_server_address(), nodes_array)
+                new_packet = self.packet_factory.new_reunion_packet("REQ", self.stream.get_server_address(), nodes_array)
 
                 print(packet.get_buf())
                 print(new_packet.get_buf())
@@ -355,7 +355,7 @@ class Peer:
                 for i in range(len(ips)):
                     nodes_array.append((ips[i], ports[i]))
 
-                new_packet = packet_fact.new_reunion_packet("REQ", self.stream.get_server_address(), nodes_array)
+                new_packet = self.packet_factory.new_reunion_packet("REQ", self.stream.get_server_address(), nodes_array)
 
                 print(new_packet.get_buf())
 
@@ -401,7 +401,7 @@ class Peer:
 #
 # nodes_array = [('127.0.0.3', '65000'), ('127.0.0.2', '65000'), ('127.0.0.1', '65010')]
 # packet = packet_fact.new_reunion_packet('REQ', ('192.168.001.004', '65000'), nodes_array)
-# 
+#
 #
 #
 # peer.handle_reunion_packet(packet)
