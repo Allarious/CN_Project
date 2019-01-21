@@ -268,6 +268,13 @@ class Peer:
 
         :return:
         """
+        if packet.get_res_or_req()=="REQ":
+            if self.is_root:
+                parent=self.__get_neighbour(packet.get_source_server_address())
+                new_packet=self.packet_factory.new_advertise_packet("RES",packet.get_source_server_address(),parent)
+                self.stream.add_message_to_out_buff(packet.get_source_server_address(),new_packet)
+                self.network_graph.add_node(packet.get_source_server_ip(),packet.get_source_server_port(),parent)
+
         pass
 
     def __handle_register_packet(self, packet):
