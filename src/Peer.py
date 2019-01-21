@@ -51,7 +51,7 @@ class Peer:
         self.server_ip = SemiNode.parse_ip(server_ip)
         self.server_port = SemiNode.parse_port(server_port)
         self.is_root = is_root
-        self.root_address = (SemiNode.parse_ip(root_address[0]), SemiNode.parse_port(root_address[1]))
+        # self.root_address = (SemiNode.parse_ip(root_address[0]), SemiNode.parse_port(root_address[1]))
 
         self.neighbours = []
         if self.is_root:
@@ -62,7 +62,7 @@ class Peer:
           #  self.graph_node = GraphNode((server_ip, server_port))
             self.reunion_mode = None
             self.last_reunion_sent_time = None
-        t = threading.Thread(target=self.run_reunion_daemon)
+        self.t = threading.Thread(target=self.run_reunion_daemon)
 
     def start_user_interface(self):
         """
@@ -239,7 +239,7 @@ class Peer:
         # if(self.is_root)
         pass
 
-    def __handle_advertise_packet(self, packet):
+    def handle_advertise_packet(self, packet):
         """
         For advertising peers in the network, It is peer discovery message.
 
@@ -268,7 +268,25 @@ class Peer:
 
         :return:
         """
-        pass
+        if(self.is_root):
+            pass
+        else:
+            if packet.get_res_or_req() == 'RES':
+                buff = packet.get_buf()[23:]
+                buff = str(buff)
+                buff = buff[2:]
+                buff = buff[:len(buff)-1]
+                ip = buff[:15]
+                port = buff[15:20]
+                print(ip, port)
+                self.stream.add_node(server_address=(ip, int(port)))
+                self.stream.get_parent_node()\
+                    .add_message_to_out_buff(PacketFactory.new_join_packet(self.stream.get_server_address()))
+                print(self.stream.get_parent_node().out_buff)
+                self.stream.get_parent_node().send_message()
+                self.t.run()
+                # self.stream.add_node()
+
 
     def __handle_register_packet(self, packet):
         """
@@ -440,3 +458,8 @@ class Peer:
         :return: The specified neighbour for the sender; The format is like ('192.168.001.001', '05335').
         """
         return self.network_graph.find_live_node(sender)
+
+
+peer = Peer('127.0.0.1', 65000)
+
+peer.handle_advertise_packet(PacketFactory.new_advertise_packet('RES', ('192.168.001.001', '65000'), ('192.168.001.001', '65000')))
