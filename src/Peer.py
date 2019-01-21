@@ -104,15 +104,24 @@ class Peer:
             2. In every situation checkout Advertise Response packets; even is Reunion in failure mode or not
 
         :return:
+
+
         """
         while True:
-            for buffer in self.stream.read_in_buf():
-                packet = self.packet_factory.parse_buffer(buffer)
-                self.handle_packet(packet)
 
-            # TODO: user interface buffer parse
+            if self.is_root or (not self.is_root and not(self.reunion_mode == "pending" and datetime.now()-self.last_reunion_sent_time>timedelta(seconds=4))):
+                for buffer in self.stream.read_in_buf():
+                    packet = self.packet_factory.parse_buffer(buffer)
+                    self.handle_packet(packet)
 
-            self.stream.send_out_buf_messages()
+                # TODO: user interface buffer parse
+
+                self.stream.send_out_buf_messages()
+            elif not self.is_root and self.reunion_mode == "pending" and datetime.now()-self.last_reunion_sent_time > timedelta(seconds=4):
+                for buffer in self.stream.read_in_buf():
+                    packet = self.packet_factory.parse_buffer(buffer)
+                    if packet.get_type() == 2 and packet.get_res_or_req() == "RES":
+                        self.__handle_advertise_packet(packet)
             time.sleep(2)
 
         pass
@@ -163,7 +172,7 @@ class Peer:
                         self.reunion_mode = "pending"
                 elif self.reunion_mode == "pending":
                     if (datetime.now() - self.last_reunion_sent_time) > timedelta(seconds=4):
-                        if self.graph_node.is_turned_off():  # TODO:not sure if I should check this
+                       # if self.graph_node.is_turned_off():  # TODO:not sure if I should check this
                             advertise_packet = self.packet_factory.new_advertise_packet("REQ",
                                                                                         (self.server_ip,
                                                                                          self.server_port))
