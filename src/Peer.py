@@ -48,12 +48,11 @@ class Peer:
         self.user_interfarce = UserInterface()
         self.is_root = is_root
         self.t = threading.Thread(target=self.run_reunion_daemon)
-        self.root_address=root_address
-        self.neighbours=[]
-        if(self.is_root):
-            self.root_node=GraphNode(self.root_address)
+        self.root_address = root_address
+        self.neighbours = []
+        if self.is_root :
+            self.root_node = GraphNode(self.root_address)
             self.network_graph=NetworkGraph(self.root_node)
-        t = threading.Thread(target=self.run_reunion_daemon)
         #TODO start daemon after getting the advertise! t.start()
 
     def start_user_interface(self):
