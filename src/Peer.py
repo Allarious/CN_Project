@@ -419,7 +419,7 @@ class Peer:
 
         :return:
         """
-        pass
+        self.stream.add_node(packet.get_source_server_address(), True)
 
     def __get_neighbour(self, sender):
         """

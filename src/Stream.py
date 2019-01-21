@@ -26,6 +26,7 @@ class Stream:
         self._server_in_buf = []
 
         self.nodes = []
+        self.nodes_is_parent = []
 
         def callback(address, queue, data):
             """
@@ -64,7 +65,7 @@ class Stream:
         """
         self._server_in_buf.clear()
 
-    def add_node(self, server_address, set_register_connection=False):
+    def add_node(self, server_address, set_register_connection=False, is_child=False):
         """
         Will add new a node to our Stream.
 
@@ -77,6 +78,10 @@ class Stream:
         :return:
         """
         self.nodes.append(Node(server_address, set_register_connection))
+        if is_child and not set_register_connection:
+            self.nodes_is_parent.append(0)
+        else:
+            self.nodes_is_parent.append(1)
 
     def remove_node(self, node):
         """
@@ -90,8 +95,12 @@ class Stream:
 
         :return:
         """
-        self.nodes.remove(node)
-        node.close()
+
+        for i in range(0, len(self.nodes)):
+            if self.nodes[i] == node:
+                self.nodes.pop(i)
+                self.nodes_is_parent.pop(i)
+                node.close()
 
     def get_node_by_server(self, ip, port):
         """
