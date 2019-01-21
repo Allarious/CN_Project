@@ -196,6 +196,11 @@ class Stream:
                 node.add_message_to_out_buff(message)
                 node.send_message()
 
+    def get_parent_address(self):
+        for i in range(0, len(self.nodes)):
+            if self.nodes_is_parent[i] == 1:
+                return self.nodes[i]
+
 
 
 #Tests
