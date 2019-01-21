@@ -7,6 +7,7 @@ import time
 import threading
 from datetime import datetime
 from datetime import timedelta
+import sys
 
 """
     Peer is our main object in this project.
@@ -212,6 +213,13 @@ class Peer:
 
         """
         type = packet.get_type()
+        if packet.get_version() != 1:
+            print("unsupported version", file=sys.stderr)
+            raise ValueError
+        if type < 1 or type > 5:
+            print("unknown packet type", file=sys.stderr)
+            raise ValueError
+
         if (type == 1):
             self.__handle_register_packet(packet)
         elif (type == 2):
@@ -314,7 +322,7 @@ class Peer:
 
         :return:
         """
-        pass
+        self.stream.broadcast_to_none_registers(packet.get_buf(), packet.get_source_server_address())
 
     def __handle_reunion_packet(self, packet):
         """
