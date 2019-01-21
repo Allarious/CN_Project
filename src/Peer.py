@@ -236,7 +236,11 @@ class Peer:
 
         :return:
         """
-        # if(self.is_root)
+        if self.is_root :
+            if self.stream.get_node_by_server(source_address[0],source_address[1]).is_register():
+                return True
+
+
         pass
 
     def __handle_advertise_packet(self, packet):
@@ -270,10 +274,11 @@ class Peer:
         """
         if packet.get_res_or_req()=="REQ":
             if self.is_root:
-                parent=self.__get_neighbour(packet.get_source_server_address())
-                new_packet=self.packet_factory.new_advertise_packet("RES",packet.get_source_server_address(),parent)
-                self.stream.add_message_to_out_buff(packet.get_source_server_address(),new_packet)
-                self.network_graph.add_node(packet.get_source_server_ip(),packet.get_source_server_port(),parent)
+                if self.__check_registered(packet.get_source_server_address()):
+                    parent=self.__get_neighbour(packet.get_source_server_address())
+                    new_packet=self.packet_factory.new_advertise_packet("RES",self.stream.get_server_address(),parent)
+                    self.stream.add_message_to_out_buff(packet.get_source_server_address(),new_packet)
+                    self.network_graph.add_node(packet.get_source_server_ip(),packet.get_source_server_port(),parent)
 
         else:
             if not self.is_root:
@@ -306,7 +311,20 @@ class Peer:
         :type packet Packet
         :return:
         """
+        #TODO:check this again
+        if self.is_root:
+            if not self.__check_registered(packet.get_source_server_address()):
+                self.stream.add_node(packet.get_source_server_address(),True)
+                response_packet=self.packet_factory.new_register_packet("RES",self.stream.get_server_address())
+                self.stream.add_message_to_out_buff(packet.get_source_server_address(),response_packet)
+        else:
+            if packet.get_res_or_req()=="RES":
+                advertise_packet=self.packet_factory.new_advertise_packet("REQ",self.stream.get_server_address())
+                self.stream.add_message_to_out_buff(packet.get_source_server_address(),advertise_packet)
+
+
         pass
+
 
     def __check_neighbour(self, address):
         """
@@ -364,7 +382,7 @@ class Peer:
         :param packet: Arrived reunion packet
         :return:
         """
-
+#TODO: update number of entire
         res = packet.get_res_or_req()
         body = str(packet.get_buf()[25:])
         ips_str = body[2:len(body) - 1]
