@@ -45,6 +45,12 @@ class Peer:
         self.stream = Stream(server_ip, server_port)
         self.packet_factory = PacketFactory()
         self.user_interfarce = UserInterface()
+        self.is_root=is_root
+        self.root_address=root_address
+        self.neighbours=[]
+        if(self.is_root):
+            self.root_node=GraphNode(self.root_address)
+            self.network_graph=NetworkGraph(self.root_node)
         t = threading.Thread(target=self.run_reunion_daemon)
         t.start()
 
@@ -131,6 +137,8 @@ class Peer:
 
         :return:
         """
+        message=broadcast_packet.get_buf()
+        self.stream.add_message_to_all_buffs(message)
         pass
 
     def handle_packet(self, packet):
@@ -167,6 +175,7 @@ class Peer:
 
         :return:
         """
+       # if(self.is_root)
         pass
 
     def __handle_advertise_packet(self, packet):
@@ -228,6 +237,14 @@ class Peer:
         :return: Whether is address in our neighbours or not.
         :rtype: bool
         """
+        if(self.root_address!=address):
+            if(self.stream.get_node_by_server(address[0],address[1])):
+                return True
+            else:
+                return False
+        else:
+            return False
+
         pass
 
     def __handle_message_packet(self, packet):
@@ -296,4 +313,7 @@ class Peer:
         :param sender: Sender of the packet
         :return: The specified neighbour for the sender; The format is like ('192.168.001.001', '05335').
         """
+        return self.network_graph.find_live_node(sender)
+
+
         pass

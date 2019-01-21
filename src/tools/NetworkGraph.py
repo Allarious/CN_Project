@@ -3,8 +3,9 @@ import time
 
 class GraphNode:
     def __init__(self, address):
-        self._address = address
-        self._children = []
+        self.address = address
+        self.children = []
+
 
         """
 
@@ -15,7 +16,7 @@ class GraphNode:
         pass
 
     def set_parent(self, parent):
-        self._parent = parent
+        self.parent = parent
 
 
     def turn_off(self):
@@ -28,37 +29,37 @@ class GraphNode:
         return self.turned_off
 
     def set_address(self, new_address):
-        self._address = new_address
+        self.address = new_address
 
 
     def get_parent(self):
-        return self._parent
+        return self.parent
 
 
     def get_address(self):
-        return self._address
+        return self.address
 
 
     def __reset(self):
-        self.set_address(None)
+        self.setaddress(None)
 
 
     def add_child(self, child):
-        self._children.append(child)
+        self.children.append(child)
 
 
-    def get_children(self) -> list:
-        return self._children
+    def get_children(self) :
+        return self.children
     def get_children_num(self):
-        return len(self._children)
+        return len(self.children)
 
 
 
 class NetworkGraph:
     def __init__(self, root: GraphNode):
         self.root = root
-        root.alive = True
-        root.set_address((0,0))
+        self.root.alive = True
+        self.root_address=None
         self.nodes = [root]
 
     def find_live_node(self, sender):
@@ -74,10 +75,10 @@ class NetworkGraph:
                             next_level = []
                             break
                         else:
-                            next_level.append(node.get_children[0])
-                            next_level.append(node.get_children[1])
+                            next_level.append(node.get_children()[0])
+                            next_level.append(node.get_children()[1])
             current_level = next_level
-        return father
+        return father.get_address()
 
     """
         Here we should find a neighbour for the sender.
@@ -100,7 +101,7 @@ class NetworkGraph:
     def find_node(self, ip, port) -> GraphNode:
         node = None
         for n in self.nodes:
-            if n.get_address == (ip, port):
+            if n.get_address() == (ip, port):
                 node = n
                 break
 
@@ -153,12 +154,13 @@ class NetworkGraph:
 
 
     def add_node(self, ip, port, father_address):
-        print(type(self.find_node(father_address[0], father_address[1])))
         new_node = GraphNode((ip, port))
         new_node.set_parent(self.find_node(father_address[0], father_address[1]))
         self.nodes.append(new_node)
+       # print(new_node.get_parent().get_address())
 
         self.find_node(father_address[0], father_address[1]).add_child(new_node)
+
 
         """ Adda new node with node_address if it does not exist in our NetworkGraph and set its father.
 
@@ -178,17 +180,20 @@ class NetworkGraph:
           :return:
          """
 
+'''root=GraphNode((0,0))
+root.set_parent((100,100))
 
-"""
-root=GraphNode((0,0))
 network=NetworkGraph(root)
+
+#network.add_node(1,1,root.get_address())
+#print(network.nodes)
+
 for i in range(1,10):
-    parent=network.find_live_node((i,i))
-    network.add_node(i,i,parent.get_address())
+    network.add_node(i,i,network.find_live_node((i,i)))
 
 
-print(network.nodes)
+for i in network.nodes:
+    if(i.get_address()!=(0,0)):
+        print(i.get_parent().get_address())
 
-"""
-
-
+'''
