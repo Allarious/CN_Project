@@ -54,7 +54,7 @@ class Peer:
             self.root_node=GraphNode(self.root_address)
             self.network_graph=NetworkGraph(self.root_node)
         t = threading.Thread(target=self.run_reunion_daemon)
-        #TODO start daemon after getting the advertise! so there it goes be t.start()
+        #TODO start daemon after getting the advertise! t.start()
 
     def start_user_interface(self):
         """
@@ -383,9 +383,6 @@ class Peer:
         :return: The specified neighbour for the sender; The format is like ('192.168.001.001', '05335').
         """
         return self.network_graph.find_live_node(sender)
-
-
-        pass
 
 
 # peer = Peer('127.0.0.1', 65010)
