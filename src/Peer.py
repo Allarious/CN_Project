@@ -324,8 +324,6 @@ class Peer:
 
                 new_packet = self.packet_factory.new_reunion_packet("RES", self.stream.get_server_address(), nodes_array)
 
-                print(packet.get_buf())
-                print(new_packet.get_buf())
 
                 #TODO send the packet
             else:
@@ -340,10 +338,7 @@ class Peer:
 
                 new_packet = self.packet_factory.new_reunion_packet("REQ", self.stream.get_server_address(), nodes_array)
 
-                print(packet.get_buf())
-                print(new_packet.get_buf())
         elif res == "RES":
-            print(ips[len(ips)-1], ports[len(ports)-1], self.stream.get_server_address())
             if ips[len(ips)-1] == self.stream.get_server_address()[0] \
                     and\
                     ports[len(ports)-1] == self.stream.get_server_address()[1]:
@@ -356,8 +351,6 @@ class Peer:
                     nodes_array.append((ips[i], ports[i]))
 
                 new_packet = self.packet_factory.new_reunion_packet("REQ", self.stream.get_server_address(), nodes_array)
-
-                print(new_packet.get_buf())
 
                 if len(ips) == 0:
                     pass
