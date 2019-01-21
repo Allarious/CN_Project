@@ -111,6 +111,7 @@ class Stream:
             if node.get_server_address() == (node.parse_ip(ip), node.parse_port(port)):
                 return node
 
+
     def add_message_to_out_buff(self, address, message):
         """
         In this function, we will add the message to the output buffer of the node that has the input address.

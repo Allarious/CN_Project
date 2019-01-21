@@ -53,7 +53,7 @@ class Peer:
         self.root_address = (SemiNode.parse_ip(root_address[0]), SemiNode.parse_port(root_address[1]))
 
         self.neighbours = []
-        if (self.is_root):
+        if self.is_root:
             self.root_node = GraphNode(self.root_address)
             self.network_graph = NetworkGraph(self.root_node)
             self.reunions_arrival_time = dict()
@@ -282,13 +282,9 @@ class Peer:
         :return: Whether is address in our neighbours or not.
         :rtype: bool
         """
-        if (self.root_address != address):
-            if (self.stream.get_node_by_server(address[0], address[1])):
-                return True
-            else:
-                return False
-        else:
-            return False
+        if self.stream.get_node_by_server(address[0], address[1]):
+                if not(self.stream.get_node_by_server(address[0], address[1]).is_register()):
+                    return True
 
         pass
 
