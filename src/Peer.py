@@ -169,7 +169,7 @@ class Peer:
                     if (datetime.now() - self.last_reunion_sent_time) >= timedelta(seconds=4):
                         nodes_array = [(self.server_ip, self.server_port)]
                         new_packet = self.packet_factory.new_reunion_packet("REQ", (self.server_ip, self.server_port), nodes_array)
-                        self.stream.add_message_to_out_buff(self.stream.get_parent_address(),new_packet.get_buf())
+                        self.stream.add_message_to_out_buff(self.stream.get_parent_address().get_server_address(),new_packet.get_buf())
                         self.last_reunion_sent_time = datetime.now()
                         self.reunion_mode = "pending"
                 elif self.reunion_mode == "pending":
@@ -268,10 +268,16 @@ class Peer:
 
         :return:
         """
-        if(self.is_root):
-            pass
+
+        if packet.get_res_or_req()=="REQ":
+            if self.is_root:
+                parent=self.__get_neighbour(packet.get_source_server_address())
+                new_packet=self.packet_factory.new_advertise_packet("RES",packet.get_source_server_address(),parent)
+                self.stream.add_message_to_out_buff(packet.get_source_server_address(),new_packet)
+                self.network_graph.add_node(packet.get_source_server_ip(),packet.get_source_server_port(),parent)
+
         else:
-            if packet.get_res_or_req() == 'RES':
+            if not self.is_root:
                 buff = packet.get_buf()[23:]
                 buff = str(buff)
                 buff = buff[2:]
@@ -285,8 +291,6 @@ class Peer:
                 print(self.stream.get_parent_node().out_buff)
                 self.stream.get_parent_node().send_message()
                 self.t.run()
-                # self.stream.add_node()
-
 
     def __handle_register_packet(self, packet):
         """
@@ -406,7 +410,7 @@ class Peer:
 
                 new_packet = self.packet_factory.new_reunion_packet("REQ", self.stream.get_server_address(),
                                                                     nodes_array)
-                parent_address=self.stream.get_parent_address
+                parent_address=self.stream.get_parent_address.get_server_address()
                 self.stream.add_message_to_out_buff(parent_address,new_packet)
 
         elif res == "RES":
@@ -459,7 +463,6 @@ class Peer:
         """
         return self.network_graph.find_live_node(sender)
 
+# peer = Peer('127.0.0.1', 65000)
 
-peer = Peer('127.0.0.1', 65000)
-
-peer.handle_advertise_packet(PacketFactory.new_advertise_packet('RES', ('192.168.001.001', '65000'), ('192.168.001.001', '65000')))
+# peer.handle_advertise_packet(PacketFactory.new_advertise_packet('RES', ('192.168.001.001', '65000'), ('192.168.001.001', '65000')))
