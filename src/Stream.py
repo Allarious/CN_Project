@@ -194,7 +194,7 @@ class Stream:
                 node.send_message()
 
 
-    def get_parent_address(self)-> Node:
+    def get_parent_node(self)-> Node:
         for i in range(0, len(self.nodes)):
             if self.nodes_is_parent[i] == 1:
                 return self.nodes[i]
