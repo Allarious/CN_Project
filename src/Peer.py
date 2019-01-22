@@ -255,7 +255,7 @@ class Peer:
 
         pass
 
-    def handle_advertise_packet(self, packet):
+    def __handle_advertise_packet(self, packet):
         """
         For advertising peers in the network, It is peer discovery message.
 
@@ -493,6 +493,6 @@ class Peer:
         """
         return self.network_graph.find_live_node(sender)
 
-# peer = Peer('127.0.0.1', 65000)
+peer = Peer('127.0.0.1', 65000)
 
 # peer.handle_advertise_packet(PacketFactory.new_advertise_packet('RES', ('192.168.001.001', '65000'), ('192.168.001.001', '65000')))
