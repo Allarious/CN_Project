@@ -71,6 +71,8 @@ class Peer:
         :return:
         """
         self.user_interfarce.run()
+        t = threading.Thread(target=self.handle_user_interface_buffer)
+        t.run()
 
     def handle_user_interface_buffer(self):
         """
@@ -85,7 +87,16 @@ class Peer:
             2. Don't forget to clear our UserInterface buffer.
         :return:
         """
-        pass
+        while(1):
+            if self.user_interfarce.buffer == 'Register':
+                pass
+            elif self.user_interfarce.buffer == 'Advertise':
+                pass
+            elif self.user_interfarce.buffer[:11] == 'SendMessage':
+                pass
+            else:
+                print("command not supported")
+            time.sleep(1)
 
     def run(self):
         """
@@ -117,6 +128,7 @@ class Peer:
                     self.handle_packet(packet)
 
                 # TODO: user interface buffer parse
+                self.start_user_interface()
 
                 self.stream.send_out_buf_messages()
             elif not self.is_root and self.reunion_mode == "pending" and datetime.now() - self.last_reunion_sent_time > timedelta(
