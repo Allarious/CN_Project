@@ -72,9 +72,8 @@ class Peer:
 
         :return:
         """
-        self.user_interfarce.run()
-        t = threading.Thread(target=self.handle_user_interface_buffer)
-        t.run()
+        self.user_interfarce.start()
+        self.handle_user_interface_buffer()
 
     def handle_user_interface_buffer(self):
         """
@@ -90,26 +89,25 @@ class Peer:
         :return:
         """
         while 1:
-            if self.user_interfarce.buffer == 'Register':
+            if "".join(self.user_interfarce.buffer) == 'Register':
+                print("Register")
                 register_packet=self.packet_factory.new_register_packet("REQ",self.stream.get_server_address()
                                                                         ,self.root_address)
                 self.stream.add_message_to_out_buff(self.root_address,register_packet.get_buf())
-                pass
-            elif self.user_interfarce.buffer == 'Advertise':
+            elif "".join(self.user_interfarce.buffer) == 'Advertise':
+                print("Advertise")
                 advertise_packet=self.packet_factory.new_advertise_packet("REQ",self.stream.get_server_address())
                 self.stream.add_message_to_out_buff(self.root_address,advertise_packet.get_buf())
-
-                pass
-            elif self.user_interfarce.buffer[:11] == 'SendMessage':
+            elif "".join(self.user_interfarce.buffer)[:11] == 'SendMessage':
+                print("SendMessage")
                 message_packet=self.packet_factory.new_message_packet(self.user_interfarce.buffer[11:],self.stream.get_server_address())
-                self.send_broadcast_packet(message_packet.get_buf())
-
-                pass
+                self.send_broadcast_packet(message_packet)
             else:
-                print("command not supported")
+                if len(self.user_interfarce.buffer) != 0 :
+                    print("command not supported or empty")
 
             self.user_interfarce.buffer.clear()
-            time.sleep(1)
+            time.sleep(0.5)
 
     def run(self):
         """
@@ -513,30 +511,30 @@ class Peer:
         return self.network_graph.find_live_node(sender)
 
 
-peer = Peer('127.0.0.1', 65001,False,('127.0.0.1', 63000))
-root = Peer('127.0.0.1', 63000, is_root=True)
-
-
-
-server = '127.0.0.1'
-port = 65409
-
-stream1 = Stream(server, port)
-stream2 = Stream(server, port+1)
-
-
-root.handle_packet(peer.packet_factory.new_register_packet("REQ",peer.stream.get_server_address(),root.stream.get_server_address()))
-root.stream.send_messages_to_node(root.stream.get_node_by_server(server,65001))
-print(root.stream.get_node_by_server(server,65001).out_buff)
-print("hey",root.stream.get_node_by_server(server,65001))
-print("im peer in buffer",peer.stream.read_in_buf())
-
-root.handle_packet(peer.packet_factory.new_advertise_packet("REQ",peer.stream.get_server_address()))
-print(root.stream.get_node_by_server(server,65001).out_buff)
-root.stream.send_messages_to_node(root.stream.get_node_by_server(server,65001))
-for buffer in peer.stream.read_in_buf():
-    print("1",buffer)
-    peer.handle_packet(peer.packet_factory.parse_buffer(buffer))
+# peer = Peer('127.0.0.1', 65001,False,('127.0.0.1', 63000))
+# root = Peer('127.0.0.1', 63000, is_root=True)
+#
+#
+#
+# server = '127.0.0.1'
+# port = 65409
+#
+# stream1 = Stream(server, port)
+# stream2 = Stream(server, port+1)
+#
+#
+# root.handle_packet(peer.packet_factory.new_register_packet("REQ",peer.stream.get_server_address(),root.stream.get_server_address()))
+# root.stream.send_messages_to_node(root.stream.get_node_by_server(server,65001))
+# print(root.stream.get_node_by_server(server,65001).out_buff)
+# print("hey",root.stream.get_node_by_server(server,65001))
+# print("im peer in buffer",peer.stream.read_in_buf())
+#
+# root.handle_packet(peer.packet_factory.new_advertise_packet("REQ",peer.stream.get_server_address()))
+# print(root.stream.get_node_by_server(server,65001).out_buff)
+# root.stream.send_messages_to_node(root.stream.get_node_by_server(server,65001))
+# for buffer in peer.stream.read_in_buf():
+#     print("1",buffer)
+#     peer.handle_packet(peer.packet_factory.parse_buffer(buffer))
 
 
 #==============

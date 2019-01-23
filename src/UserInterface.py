@@ -1,7 +1,6 @@
 import threading
 import time
 
-
 class UserInterface(threading.Thread):
     buffer = []
 
@@ -13,3 +12,4 @@ class UserInterface(threading.Thread):
         while True:
             message = input("Write your command:\n")
             self.buffer.append(message)
+            time.sleep(0.5)
