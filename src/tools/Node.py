@@ -17,8 +17,8 @@ class Node:
         :param set_root:
         :param set_register:
         """
-        self.server_ip = Node.parse_ip(server_address[0])
-        self.server_port = Node.parse_port(server_address[1])
+        self.server_ip = Node.parse_ip(self.server_address[0])
+        self.server_port = Node.parse_port(self.server_address[1])
 
         self.register = set_register
 
@@ -27,7 +27,7 @@ class Node:
         self.out_buff = []
 
         try:
-            self.client = ClientSocket(self.server_ip, server_address[1], single_use=False)
+            self.client = ClientSocket(self.server_ip, self.server_port, single_use=False)
         except:
             self.out_buff.clear()
 

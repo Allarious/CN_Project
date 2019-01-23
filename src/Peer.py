@@ -45,7 +45,7 @@ class Peer:
         :type is_root: bool
         :type root_address: tuple
         """
-        self.root_address = root_address
+        self.root_address = (SemiNode.parse_ip(root_address[0]),SemiNode.parse_port(root_address[1]))
         self.stream = Stream(server_ip, server_port)
         self.packet_factory = PacketFactory()
         self.user_interfarce = UserInterface()
@@ -88,15 +88,26 @@ class Peer:
             2. Don't forget to clear our UserInterface buffer.
         :return:
         """
-        while (1):
+        while 1:
             if self.user_interfarce.buffer == 'Register':
+                register_packet=self.packet_factory.new_register_packet("REQ",self.stream.get_server_address()
+                                                                        ,self.root_address)
+                self.stream.add_message_to_out_buff(self.root_address,register_packet)
                 pass
             elif self.user_interfarce.buffer == 'Advertise':
+                advertise_packet=self.packet_factory.new_advertise_packet("REQ",self.stream.get_server_address())
+                self.stream.add_message_to_out_buff(self.root_address,advertise_packet)
+
                 pass
             elif self.user_interfarce.buffer[:11] == 'SendMessage':
+                message_packet=self.packet_factory.new_message_packet(self.user_interfarce.buffer[11:],self.stream.get_server_address())
+                self.send_broadcast_packet(message_packet)
+
                 pass
             else:
                 print("command not supported")
+
+            self.user_interfarce.buffer.clear()
             time.sleep(1)
 
     def run(self):
@@ -206,7 +217,7 @@ class Peer:
         :return:
         """
         message = broadcast_packet.get_buf()
-        self.stream.add_message_to_all_buffs(message)
+        self.stream.broadcast_to_none_registers(message,self.stream.get_server_address())
         pass
 
     def handle_packet(self, packet):
@@ -252,8 +263,9 @@ class Peer:
         :return:
         """
         if self.is_root:
-            if self.stream.get_node_by_server(source_address[0], source_address[1]).is_register():
-                return True
+            if self.stream.get_node_by_server(source_address[0], source_address[1]):
+                if self.stream.get_node_by_server(source_address[0], source_address[1]).is_register():
+                    return True
 
         pass
 
@@ -333,10 +345,11 @@ class Peer:
                 self.stream.add_node(packet.get_source_server_address(), True)
                 response_packet = self.packet_factory.new_register_packet("RES", self.stream.get_server_address())
                 self.stream.add_message_to_out_buff(packet.get_source_server_address(), response_packet)
-        else:
-            if packet.get_res_or_req() == "RES":
-                advertise_packet = self.packet_factory.new_advertise_packet("REQ", self.stream.get_server_address())
-                self.stream.add_message_to_out_buff(packet.get_source_server_address(), advertise_packet)
+     #   else:
+      #      if packet.get_res_or_req() == "RES":
+
+                 #advertise_packet = self.packet_factory.new_advertise_packet("REQ", self.stream.get_server_address())
+                 #self.stream.add_message_to_out_buff(packet.get_source_server_address(), advertise_packet)
 
         pass
 
@@ -517,10 +530,10 @@ stream2 = Stream(server, port+1)
 #==============
 #for join
 #peer.handle_packet(peer.packet_factory.new_join_packet((server, port)))
-# print(peer.stream1.nodes)
-# print(peer.stream1.nodes_is_parent)
-# peer.stream1.add_message_to_out_buff((server, port), "heyyyy")
-# print(peer.stream1.send_out_buf_messages())
+#print("father",peer.stream.nodes)
+#print("child peer",stream1.nodes_is_parent)
+#peer.stream.add_message_to_out_buff((server, port), "heyyyy")
+#print(peer.stream.send_out_buf_messages())
 #==============
 #for join and send message sends two joins for Peer and the Peer broadcasts
 # peer.handle_packet(peer.packet_factory.new_join_packet((server, port)))
@@ -528,3 +541,14 @@ stream2 = Stream(server, port+1)
 #
 # peer.handle_packet(peer.packet_factory.new_message_packet("hey there!", ('127.0.0.1', 61234)))
 #==============
+
+#for register and advertise
+# sending advertise req to root
+#root.handle_packet(peer.packet_factory.new_register_packet("REQ",peer.stream.get_server_address(),root.stream.get_server_address()))
+#root.stream.send_messages_to_node(root.stream.get_node_by_server(server,65001))
+#print(root.stream.get_node_by_server(server,65001).out_buff)
+#print("hey",root.stream.get_node_by_server(server,65001))
+#print("im peer in buffer",peer.stream.read_in_buf())
+
+#root.handle_packet(peer.packet_factory.new_advertise_packet("REQ",peer.stream.get_server_address()))
+#print(root.stream.get_node_by_server(server,65001).out_buff)
