@@ -356,7 +356,7 @@ class Peer:
                 return True
 
         pass
-
+    #Tested
     def __handle_message_packet(self, packet):
         """
         Only broadcast message to the other nodes.
@@ -371,7 +371,7 @@ class Peer:
 
         :return:
         """
-        self.stream.broadcast_to_none_registers(packet.get_buf(), packet.get_source_server_address())
+        print(self.stream.broadcast_to_none_registers(str(packet.get_buf()), packet.get_source_server_address()))
 
     #Tested packet builds not send!
     def __handle_reunion_packet(self, packet):
@@ -503,21 +503,28 @@ peer = Peer('127.0.0.1', 65001)
 root = Peer('127.0.0.1', 63000, is_root=True)
 
 server = '127.0.0.1'
-port = 65404
+port = 65407
 
-stream = Stream(server, port)
+stream1 = Stream(server, port)
+stream2 = Stream(server, port+1)
 
 #==============
 # for reunion
 #none root
 # peer.handle_packet(peer.packet_factory.new_reunion_packet("RES", ('127.0.0.1', 45000), [('192.168.0.1', 65900), ('127.0.0.1', 65001)]))
 #root
-root.handle_packet(peer.packet_factory.new_reunion_packet("REQ", ('127.0.0.1', 45000), [('192.168.0.1', 65900), ('127.0.0.1', 65001)]))
+# root.handle_packet(peer.packet_factory.new_reunion_packet("REQ", ('127.0.0.1', 45000), [('192.168.0.1', 65900), ('127.0.0.1', 65001)]))
 #==============
 #for join
 #peer.handle_packet(peer.packet_factory.new_join_packet((server, port)))
-# print(peer.stream.nodes)
-# print(peer.stream.nodes_is_parent)
-# peer.stream.add_message_to_out_buff((server, port), "heyyyy")
-# print(peer.stream.send_out_buf_messages())
+# print(peer.stream1.nodes)
+# print(peer.stream1.nodes_is_parent)
+# peer.stream1.add_message_to_out_buff((server, port), "heyyyy")
+# print(peer.stream1.send_out_buf_messages())
+#==============
+#for join and send message sends two joins for Peer and the Peer broadcasts
+# peer.handle_packet(peer.packet_factory.new_join_packet((server, port)))
+# peer.handle_packet(peer.packet_factory.new_join_packet((server, port+1)))
+#
+# peer.handle_packet(peer.packet_factory.new_message_packet("hey there!", ('127.0.0.1', 61234)))
 #==============

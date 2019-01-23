@@ -37,8 +37,8 @@ class Node:
 
         :return:
         """
-
-        ans = self.client.send("".join(self.out_buff))
+        s = "".join(self.out_buff)
+        ans = self.client.send(s)
         self.out_buff.clear()
         return ans
 
