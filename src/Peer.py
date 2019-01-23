@@ -93,16 +93,16 @@ class Peer:
             if self.user_interfarce.buffer == 'Register':
                 register_packet=self.packet_factory.new_register_packet("REQ",self.stream.get_server_address()
                                                                         ,self.root_address)
-                self.stream.add_message_to_out_buff(self.root_address,register_packet)
+                self.stream.add_message_to_out_buff(self.root_address,register_packet.get_buf())
                 pass
             elif self.user_interfarce.buffer == 'Advertise':
                 advertise_packet=self.packet_factory.new_advertise_packet("REQ",self.stream.get_server_address())
-                self.stream.add_message_to_out_buff(self.root_address,advertise_packet)
+                self.stream.add_message_to_out_buff(self.root_address,advertise_packet.get_buf())
 
                 pass
             elif self.user_interfarce.buffer[:11] == 'SendMessage':
                 message_packet=self.packet_factory.new_message_packet(self.user_interfarce.buffer[11:],self.stream.get_server_address())
-                self.send_broadcast_packet(message_packet)
+                self.send_broadcast_packet(message_packet.get_buf())
 
                 pass
             else:
@@ -305,7 +305,7 @@ class Peer:
                     parent = self.__get_neighbour(packet.get_source_server_address())
                     new_packet = self.packet_factory.new_advertise_packet("RES", self.stream.get_server_address(),
                                                                           parent)
-                    self.stream.add_message_to_out_buff(packet.get_source_server_address(), new_packet)
+                    self.stream.add_message_to_out_buff(packet.get_source_server_address(), new_packet.get_buf())
                     self.network_graph.add_node(packet.get_source_server_ip(), packet.get_source_server_port(), parent)
 
         else:
