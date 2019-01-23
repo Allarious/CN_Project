@@ -45,11 +45,12 @@ class Peer:
         :type is_root: bool
         :type root_address: tuple
         """
+        self.root_address = root_address
         self.stream = Stream(server_ip, server_port)
         self.packet_factory = PacketFactory()
         self.user_interfarce = UserInterface()
         self.server_ip = SemiNode.parse_ip(server_ip)
-        self.server_port = SemiNode.parse_port(server_port)
+        self.server_port = SemiNode.parse_port(str(server_port))
         self.is_root = is_root
         # self.root_address = (SemiNode.parse_ip(root_address[0]), SemiNode.parse_port(root_address[1]))
 
@@ -121,8 +122,7 @@ class Peer:
         while True:
 
             if self.is_root or (not self.is_root and not (
-                    self.reunion_mode == "pending" and datetime.now() - self.last_reunion_sent_time > timedelta(
-                seconds=4))):
+                    self.reunion_mode == "pending" and datetime.now() - self.last_reunion_sent_time > timedelta(seconds= 4))):
                 for buffer in self.stream.read_in_buf():
                     packet = self.packet_factory.parse_buffer(buffer)
                     self.handle_packet(packet)
@@ -182,7 +182,7 @@ class Peer:
                         nodes_array = [(self.server_ip, self.server_port)]
                         new_packet = self.packet_factory.new_reunion_packet("REQ", (self.server_ip, self.server_port),
                                                                             nodes_array)
-                        self.stream.add_message_to_out_buff(self.stream.get_parent_address().get_server_address(),
+                        self.stream.add_message_to_out_buff(self.stream.get_parent_node().get_server_address(),
                                                             new_packet.get_buf())
                         self.last_reunion_sent_time = datetime.now()
                         self.reunion_mode = "pending"
@@ -373,6 +373,7 @@ class Peer:
         """
         self.stream.broadcast_to_none_registers(packet.get_buf(), packet.get_source_server_address())
 
+    #Tested packet builds not send!
     def __handle_reunion_packet(self, packet):
         """
         In this function we should handle Reunion packet was just arrived.
@@ -411,7 +412,7 @@ class Peer:
                 # updating reunions arrival time
                 adds = []
                 for i in range(len(ips)):
-                    adds.append((SemiNode.parse_port(ips[i]), SemiNode.parse_port(ports[i])))
+                    adds.append((SemiNode.parse_ip(ips[i]), SemiNode.parse_port(ports[i])))
 
                 for address in adds:
                     self.reunions_arrival_time[address] = datetime.now()
@@ -427,6 +428,7 @@ class Peer:
                 new_packet = self.packet_factory.new_reunion_packet("RES", self.stream.get_server_address(),
                                                                     nodes_array)
                 node_address = (SemiNode.parse_ip(nodes_array[0][0]), SemiNode.parse_port(nodes_array[0][1]))
+                print(new_packet.get_buf())
                 self.stream.add_message_to_out_buff(node_address, new_packet)
 
             else:
@@ -441,7 +443,8 @@ class Peer:
 
                 new_packet = self.packet_factory.new_reunion_packet("REQ", self.stream.get_server_address(),
                                                                     nodes_array)
-                parent_address = self.stream.get_parent_address.get_server_address()
+                print(new_packet.get_buf())
+                parent_address = self.stream.get_parent_node().get_server_address()
                 self.stream.add_message_to_out_buff(parent_address, new_packet)
 
         elif res == "RES":
@@ -461,12 +464,13 @@ class Peer:
 
                 if len(ips) == 0:
                     self.reunion_mode = "acceptance"
+                    print("accepted")
                 else:
                     node_address = (SemiNode.parse_ip(nodes_array[0][0]), SemiNode.parse_port(nodes_array[0][1]))
+                    print(new_packet.get_buf())
                     self.stream.add_message_to_out_buff(node_address, new_packet)
-                    pass
-        pass
 
+    #Tested
     def __handle_join_packet(self, packet):
         """
         When a Join packet received we should add a new node to our nodes array.
@@ -495,6 +499,25 @@ class Peer:
         return self.network_graph.find_live_node(sender)
 
 
-peer = Peer('127.0.0.1', 65000)
+peer = Peer('127.0.0.1', 65001)
+root = Peer('127.0.0.1', 63000, is_root=True)
 
-# peer.handle_advertise_packet(PacketFactory.new_advertise_packet('RES', ('192.168.001.001', '65000'), ('192.168.001.001', '65000')))
+server = '127.0.0.1'
+port = 65404
+
+stream = Stream(server, port)
+
+#==============
+# for reunion
+#none root
+# peer.handle_packet(peer.packet_factory.new_reunion_packet("RES", ('127.0.0.1', 45000), [('192.168.0.1', 65900), ('127.0.0.1', 65001)]))
+#root
+root.handle_packet(peer.packet_factory.new_reunion_packet("REQ", ('127.0.0.1', 45000), [('192.168.0.1', 65900), ('127.0.0.1', 65001)]))
+#==============
+#for join
+#peer.handle_packet(peer.packet_factory.new_join_packet((server, port)))
+# print(peer.stream.nodes)
+# print(peer.stream.nodes_is_parent)
+# peer.stream.add_message_to_out_buff((server, port), "heyyyy")
+# print(peer.stream.send_out_buf_messages())
+#==============

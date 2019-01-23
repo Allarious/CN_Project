@@ -62,7 +62,9 @@ class ServerSocket:
         # Now, the main loop.
         while readers:
             # Block until a socket is ready for processing.
+            print("waiting!")
             read, write, err = select.select(readers, writers, readers)
+            print("going on...")
             # Deal with sockets that need to be read from.
             for sock in read:
                 if sock is self._socket:

@@ -38,9 +38,9 @@ class Node:
         :return:
         """
 
-        out_buff = self.client.send("".join(self.out_buff))
+        ans = self.client.send("".join(self.out_buff))
         self.out_buff.clear()
-        return out_buff
+        return ans
 
     def add_message_to_out_buff(self, message):
         """
@@ -78,6 +78,7 @@ class Node:
         :return: Formatted IP
         :rtype: str
         """
+        print(ip)
         return '.'.join(str(int(part)).zfill(3) for part in ip.split('.'))
 
     @staticmethod

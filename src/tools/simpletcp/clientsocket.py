@@ -21,7 +21,7 @@ class ClientSocket:
         else:
             self.connect_ip = mode
         # Handle the port we're going to connect to.
-        self.connect_port = port
+        self.connect_port = int(port)
         if type(self.connect_port) != int:
             print("port must be an integer", file=sys.stderr)
             raise ValueError

@@ -275,7 +275,7 @@ class Packet:
         return (self.get_source_server_ip(), self.get_source_server_port())
 
     def get_res_or_req(self):
-        if(self.get_body()[3] == 81):
+        if self.get_body()[2] == 81 :
             return 'REQ'
         else:
             return 'RES'
@@ -434,7 +434,7 @@ class PacketFactory:
 
     @staticmethod
     def port_prettify(port):
-        return port.zfill(5)
+        return str(port).zfill(5)
 
 
 # #Tests

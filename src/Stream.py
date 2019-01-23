@@ -37,10 +37,10 @@ class Stream:
             :param data: The data received from the socket.
             :return:
             """
-            print(data)
+            # print(data)
             queue.put(bytes('ACK', 'utf8'))
             self._server_in_buf.append(data)
-            print(self._server_in_buf)
+            # print(self._server_in_buf)
 
         tcp_server = TCPServer(self.ip, port, callback)
 
@@ -102,7 +102,7 @@ class Stream:
                 self.nodes_is_parent.pop(i)
                 node.close()
 
-    def get_node_by_server(self, ip, port):
+    def get_node_by_server(self, ip, port) -> Node:
         """
 
         Will find the node that has IP/Port address of input.
@@ -167,9 +167,11 @@ class Stream:
         :return:
         """
         try:
-            node.send_message()
+            ans = node.send_message()
+            return ans
         except:
             self.remove_node(node)
+            return
 
     def send_out_buf_messages(self, only_register=False):
         """
@@ -177,12 +179,15 @@ class Stream:
 
         :return:
         """
+        ans = []
         for node in self.nodes:
             if only_register:
                 if node.register:
-                    self.send_messages_to_node(node)
+                    ans.append(self.send_messages_to_node(node))
             else:
-                self.send_messages_to_node(node)
+                ans.append(self.send_messages_to_node(node))
+
+        return ans
 
     def broadcast_to_none_registers(self, message, address):
         """ this function broadcasts the given message to none registered nodes """
