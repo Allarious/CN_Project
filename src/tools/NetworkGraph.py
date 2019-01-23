@@ -81,6 +81,7 @@ class NetworkGraph:
                             next_level.append(node.get_children()[0])
                             next_level.append(node.get_children()[1])
             current_level = next_level
+
         return father.get_address()
 
     """

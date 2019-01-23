@@ -57,7 +57,7 @@ class Peer:
 
         self.neighbours = []
         if self.is_root:
-            self.root_node = GraphNode(self.root_address)
+            self.root_node = GraphNode(self.stream.get_server_address())
             self.network_graph = NetworkGraph(self.root_node)
             self.reunions_arrival_time = dict()
         else:
@@ -306,7 +306,7 @@ class Peer:
                     new_packet = self.packet_factory.new_advertise_packet("RES", self.stream.get_server_address(),
                                                                           parent)
                     self.stream.add_message_to_out_buff(packet.get_source_server_address(), new_packet.get_buf())
-                    self.network_graph.add_node(packet.get_source_server_ip(), packet.get_source_server_port(), parent)
+                    self.network_graph.add_node(packet.get_source_server_ip(), packet.get_source_server_port(),parent)
 
         else:
             if not self.is_root:
@@ -318,11 +318,12 @@ class Peer:
                 port = buff[15:20]
                 print(ip, port)
                 self.stream.add_node(server_address=(ip, int(port)))
-                self.stream.get_parent_node() \
-                    .add_message_to_out_buff(PacketFactory.new_join_packet(self.stream.get_server_address()))
-                print(self.stream.get_parent_node().out_buff)
-                self.stream.get_parent_node().send_message()
+                self.stream.get_parent_node().add_message_to_out_buff(PacketFactory.new_join_packet(self.stream.get_server_address()))
+                print("join",self.stream.get_parent_node().out_buff)
+                #self.stream.get_parent_node().send_message()
+                print("hogyttg")
                 self.t.run()
+                print("adkofg")
 
     def __handle_register_packet(self, packet):
         """
@@ -522,6 +523,22 @@ port = 65409
 
 stream1 = Stream(server, port)
 stream2 = Stream(server, port+1)
+
+
+root.handle_packet(peer.packet_factory.new_register_packet("REQ",peer.stream.get_server_address(),root.stream.get_server_address()))
+root.stream.send_messages_to_node(root.stream.get_node_by_server(server,65001))
+print(root.stream.get_node_by_server(server,65001).out_buff)
+print("hey",root.stream.get_node_by_server(server,65001))
+print("im peer in buffer",peer.stream.read_in_buf())
+
+root.handle_packet(peer.packet_factory.new_advertise_packet("REQ",peer.stream.get_server_address()))
+print(root.stream.get_node_by_server(server,65001).out_buff)
+root.stream.send_messages_to_node(root.stream.get_node_by_server(server,65001))
+for buffer in peer.stream.read_in_buf():
+    print("1",buffer)
+    peer.handle_packet(peer.packet_factory.parse_buffer(buffer))
+
+
 #==============
 #for register
 # root.handle_packet(peer.packet_factory.new_register_packet("REQ",peer.stream.get_server_address(),root.stream.get_server_address()))
@@ -552,11 +569,13 @@ stream2 = Stream(server, port+1)
 
 #for register and advertise
 # sending advertise req to root
-root.handle_packet(peer.packet_factory.new_register_packet("REQ",peer.stream.get_server_address(),root.stream.get_server_address()))
-root.stream.send_messages_to_node(root.stream.get_node_by_server(server,65001))
-print(root.stream.get_node_by_server(server,65001).out_buff)
-print("hey",root.stream.get_node_by_server(server,65001))
-print("im peer in buffer",peer.stream.read_in_buf())
+#root.handle_packet(peer.packet_factory.new_register_packet("REQ",peer.stream.get_server_address(),root.stream.get_server_address()))
+#root.stream.send_messages_to_node(root.stream.get_node_by_server(server,65001))
+#print(root.stream.get_node_by_server(server,65001).out_buff)
+#print("hey",root.stream.get_node_by_server(server,65001))
+#print("im peer in buffer",peer.stream.read_in_buf())
 
-root.handle_packet(peer.packet_factory.new_advertise_packet("REQ",peer.stream.get_server_address()))
-print(root.stream.get_node_by_server(server,65001).out_buff)
+#root.handle_packet(peer.packet_factory.new_advertise_packet("REQ",peer.stream.get_server_address()))
+#print(root.stream.get_node_by_server(server,65001).out_buff)
+
+
