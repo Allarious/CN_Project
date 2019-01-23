@@ -79,9 +79,9 @@ class ClientSocket:
             # Keep track of whether this socket has been closed.
             self.closed = False
         # If data is a string, rather than bytes.
-        # if type(data) == str:
-        #     Turn it into UTF-8 bytes.
-        data = bytes(data, "UTF-8")
+        if type(data) == str:
+            #     Turn it into UTF-8 bytes.
+            data = bytes(data, "UTF-8")
         # If the data isn't bytes at this point, something went wrong.
         if type(data) != bytes:
             print("data must be a string or bytes", file=sys.stderr)

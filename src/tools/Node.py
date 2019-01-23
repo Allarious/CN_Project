@@ -39,8 +39,12 @@ class Node:
 
         :return:
         """
-        s = "".join(self.out_buff)
-        ans = self.client.send(s)
+        print(self.out_buff)
+        if(len(self.out_buff) == 1):
+            ans = self.client.send(self.out_buff[0])
+        else:
+            s = "".join(self.out_buff)
+            ans = self.client.send(s)
         self.out_buff.clear()
         return ans
 

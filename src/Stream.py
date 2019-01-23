@@ -171,7 +171,7 @@ class Stream:
             ans = node.send_message()
             return ans
         except:
-            print("doesnt woek")
+            print("doesnt work! doesn't it?")
             self.remove_node(node)
             return
 
