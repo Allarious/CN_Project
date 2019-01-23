@@ -162,6 +162,7 @@ class Stream:
             you need to remove this node from stream nodes.
 
         :param node:
+
         :type node Node
 
         :return:

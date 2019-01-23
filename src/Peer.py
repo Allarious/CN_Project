@@ -45,7 +45,8 @@ class Peer:
         :type is_root: bool
         :type root_address: tuple
         """
-        self.root_address = (SemiNode.parse_ip(root_address[0]),SemiNode.parse_port(root_address[1]))
+     #   self.root_address = (SemiNode.parse_ip(root_address[0]),SemiNode.parse_port(root_address[1]))
+        self.root_address=root_address
         self.stream = Stream(server_ip, server_port)
         self.packet_factory = PacketFactory()
         self.user_interfarce = UserInterface()
@@ -342,6 +343,7 @@ class Peer:
         # TODO:check this again
         if self.is_root:
             if not self.__check_registered(packet.get_source_server_address()):
+                print("node address ",packet.get_source_server_address())
                 self.stream.add_node(packet.get_source_server_address(), True)
                 response_packet = self.packet_factory.new_register_packet("RES", self.stream.get_server_address())
                 self.stream.add_message_to_out_buff(packet.get_source_server_address(), response_packet)
@@ -512,14 +514,22 @@ class Peer:
         return self.network_graph.find_live_node(sender)
 
 
-peer = Peer('127.0.0.1', 65001)
+peer = Peer('127.0.0.1', 65001,False,('127.0.0.1', 63000))
 root = Peer('127.0.0.1', 63000, is_root=True)
+
+
 
 server = '127.0.0.1'
 port = 65407
 
 stream1 = Stream(server, port)
 stream2 = Stream(server, port+1)
+#==============
+#for register
+#root.handle_packet(peer.packet_factory.new_register_packet("REQ",peer.stream.get_server_address(),root.stream.get_server_address()))
+#print(root.stream.nodes)
+#print(root.stream.get_node_by_server(server,65001))
+#root.stream.send_messages_to_node(root.stream.get_node_by_server(server,65001))
 
 #==============
 # for reunion
