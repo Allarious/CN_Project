@@ -2,9 +2,11 @@ import time
 
 
 class GraphNode:
-    def __init__(self, address):
+    def __init__(self, address,parent=None,turned_off=False):
         self.address = address
         self.children = []
+        self.turned_off=turned_off
+        self.parent=parent
 
 
         """
@@ -156,8 +158,8 @@ class NetworkGraph:
 
 
     def add_node(self, ip, port, father_address):
-        new_node = GraphNode((ip, port))
-        new_node.set_parent(self.find_node(father_address[0], father_address[1]))
+        new_node = GraphNode((ip, port),self.find_node(father_address[0],father_address[1]))
+       # new_node.set_parent(self.find_node(father_address[0], father_address[1]))
         self.nodes.append(new_node)
        # print(new_node.get_parent().get_address())
 
