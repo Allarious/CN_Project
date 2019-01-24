@@ -1,0 +1,80 @@
+@import url(https://fonts.googleapis.com/css?family=Raleway:300);
+*, *:before, *:after {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  background: url(https://i.imgur.com/CZdBKjO.gif) no-repeat center center fixed;
+  background-size: cover;
+  font-family: 'Raleway', sans-serif;
+  background-color: #342643;
+  height: 100%;
+}
+
+.head{
+  font-size: 25px;
+  color: aliceblue;
+  text-align: center;
+  margin-top: 200px;
+}
+
+.text-message{
+  height: 50px;
+  width: 20%;
+  background-color: white;
+  border: 2px solid black;
+  margin: 50px auto;
+  position: relative;
+  left: 40%;
+  opacity: 0.5;
+  border-radius: 10px;
+  padding: 20px;
+  font-size: 14px;
+  color: black;
+}
+
+.buttons{
+  margin: 0 auto;
+  width: 40%;
+  padding: 20px;
+  overflow: auto;
+}
+
+.register{
+  width: 30%;
+  background-color: grey;
+  height: 80px;
+  float: left;
+  margin-right: 20px;
+  border-radius: 10px;
+  opacity: 0.9;
+}
+
+.advertise{
+  width: 30%;
+  background-color: grey;
+  height: 80px;
+  float: left;
+  margin-right: 20px;
+  border-radius: 10px;
+  opacity: 0.9;
+}
+
+.message{
+  width: 30%;
+  background-color: grey;
+  height: 80px;
+  float: left;
+  border-radius: 10px;
+  opacity: 0.9;
+}
+
+.text-button{
+  text-align: center;
+  line-height: 80px;
+  cursor: pointer;
+}
