@@ -317,6 +317,7 @@ class Peer:
                     parent = self.__get_neighbour(packet.get_source_server_address())
                     new_packet = self.packet_factory.new_advertise_packet("RES", self.stream.get_server_address(),
                                                                           parent)
+                    print("packet from advertise root" + str(new_packet.get_buf()))
                     self.stream.add_message_to_out_buff(packet.get_source_server_address(), new_packet.get_buf())
                     self.network_graph.add_node(packet.get_source_server_ip(), packet.get_source_server_port(),parent)
 
@@ -331,11 +332,11 @@ class Peer:
                 port = buff[15:20]
                 print(ip, port)
                 self.stream.add_node(server_address=(ip, int(port)))
-                self.stream.get_parent_node().add_message_to_out_buff(PacketFactory.new_join_packet(self.stream.get_server_address()))
+                self.stream.get_parent_node().add_message_to_out_buff(PacketFactory.new_join_packet(self.stream.get_server_address()).get_buf())
                 print("join",self.stream.get_parent_node().out_buff)
-                #self.stream.get_parent_node().send_message()
+                self.stream.get_parent_node().send_message()
                 print("hogyttg")
-                self.t.run()
+                # self.t.run()
                 print("adkofg")
 
     def __handle_register_packet(self, packet):
@@ -515,7 +516,7 @@ class Peer:
 
         :return:
         """
-        print("sending join: " + str(packet.get_buf()))
+        print("recv join: " + str(packet.get_buf()))
         self.stream.add_node(packet.get_source_server_address(), is_child=True)
 
     def __get_neighbour(self, sender):
