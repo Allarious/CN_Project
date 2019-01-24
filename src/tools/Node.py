@@ -28,6 +28,7 @@ class Node:
         try:
            # self.client = ClientSocket(self.server_ip, self.server_port, single_use=False)
             self.client = ClientSocket(server_address[0],server_address[1], single_use=False)
+            print("from client connecting to the server: " + server_address)
             #print("client address",server_address)
         except:
             "heree"
@@ -39,12 +40,13 @@ class Node:
 
         :return:
         """
-        print(self.out_buff)
-        if(len(self.out_buff) == 1):
+        ans = 'not send'
+        if len(self.out_buff) == 1 and not self.out_buff[0] == '':
             ans = self.client.send(self.out_buff[0])
         else:
             s = "".join(self.out_buff)
-            ans = self.client.send(s)
+            if not s == '':
+                ans = self.client.send(s)
         self.out_buff.clear()
         return ans
 

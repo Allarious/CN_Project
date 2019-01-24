@@ -58,10 +58,13 @@ class Peer:
 
         self.neighbours = []
         if self.is_root:
+            print("from root in init")
             self.root_node = GraphNode(self.stream.get_server_address())
             self.network_graph = NetworkGraph(self.root_node)
             self.reunions_arrival_time = dict()
         else:
+            print("from peer in init")
+            self.stream.add_node(root_address, is_child=True, set_register_connection=True)
             #  self.graph_node = GraphNode((server_ip, server_port))
             self.reunion_mode = None
             self.last_reunion_sent_time = None
@@ -96,10 +99,12 @@ class Peer:
                 register_packet=self.packet_factory.new_register_packet("REQ",self.stream.get_server_address()
                                                                         ,self.root_address)
                 self.stream.add_message_to_out_buff(self.root_address,register_packet.get_buf())
+                self.stream.print_out_buffs()
             elif "".join(self.user_interfarce.buffer) == 'Advertise':
                 print("Advertise")
                 advertise_packet=self.packet_factory.new_advertise_packet("REQ",self.stream.get_server_address())
                 self.stream.add_message_to_out_buff(self.root_address,advertise_packet.get_buf())
+                self.stream.print_out_buffs()
             elif "".join(self.user_interfarce.buffer)[:11] == 'SendMessage':
                 print("SendMessage")
                 print("".join(self.user_interfarce.buffer)[11:])
@@ -140,21 +145,22 @@ class Peer:
                 for buffer in self.stream.read_in_buf():
                     packet = self.packet_factory.parse_buffer(buffer)
                     self.handle_packet(packet)
+                self.stream.clear_in_buff()
 
                 # TODO: user interface buffer parse
                 if not self.flag:
                     self.start_user_interface()
                     self.flag = True
-                print(self.stream._server_in_buf)
-                print(self.stream.print_out_buffs())
-                self.stream.send_out_buf_messages()
+                # print(self.stream._server_in_buf)
+                # print(self.stream.print_out_buffs())
+                print(self.stream.send_out_buf_messages())
             elif not self.is_root and self.reunion_mode == "pending" and datetime.now() - self.last_reunion_sent_time > timedelta(
                     seconds=4):
                 for buffer in self.stream.read_in_buf():
                     packet = self.packet_factory.parse_buffer(buffer)
                     if packet.get_type() == 2 and packet.get_res_or_req() == "RES":
                         self.__handle_advertise_packet(packet)
-            time.sleep(2)
+            time.sleep(5)
 
         pass
 
@@ -352,7 +358,7 @@ class Peer:
             print("register in root:" + str(packet.get_buf()))
             if not self.__check_registered(packet.get_source_server_address()):
                 print("node address ",packet.get_source_server_address())
-                self.stream.add_node(packet.get_source_server_address(), set_register_connection=True)
+                self.stream.add_node(packet.get_source_server_address(), is_child=True ,set_register_connection=True)
                 response_packet = self.packet_factory.new_register_packet("RES", self.stream.get_server_address())
                 self.stream.add_message_to_out_buff(packet.get_source_server_address(), response_packet.get_buf())
      #   else:
