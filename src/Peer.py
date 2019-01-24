@@ -402,7 +402,12 @@ class Peer:
         :return:
         """
         print("from handle message: " + str(packet.get_buf()))
-        print(self.stream.broadcast_to_none_registers(str(packet.get_buf()), packet.get_source_server_address()))
+
+        body = str(packet.get_buf()[20:])
+
+        new_packet = self.packet_factory.new_message_packet(body[2:len(body)-1], self.stream.get_server_address())
+
+        print(self.stream.broadcast_to_none_registers(new_packet.get_buf(), packet.get_source_server_address()))
 
     #Tested packet builds not send!
     def __handle_reunion_packet(self, packet):
@@ -536,6 +541,9 @@ class Peer:
 # peer = Peer('127.0.0.1', 65001,False,('127.0.0.1', 63000))
 # root = Peer('127.0.0.1', 63000, is_root=True)
 #
+# packet = PacketFactory.new_message_packet("hello preni!", ('128.9.9.9', 45000))
+# peer.handle_message_packet(packet)
+#
 #
 #
 # server = '127.0.0.1'
@@ -597,5 +605,4 @@ class Peer:
 
 #root.handle_packet(peer.packet_factory.new_advertise_packet("REQ",peer.stream.get_server_address()))
 #print(root.stream.get_node_by_server(server,65001).out_buff)
-
 
