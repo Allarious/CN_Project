@@ -64,7 +64,7 @@ class Peer:
             self.reunions_arrival_time = dict()
         else:
             print("from peer in init")
-            self.stream.add_node(root_address, is_child=True, set_register_connection=True)
+            self.stream.add_node(root_address, set_register_connection=True)
             #  self.graph_node = GraphNode((server_ip, server_port))
             self.reunion_mode = None
             self.last_reunion_sent_time = None
@@ -331,7 +331,7 @@ class Peer:
                 ip = buff[:15]
                 port = buff[15:20]
                 print(ip, port)
-                self.stream.add_node(server_address=(ip, int(port)))
+                self.stream.add_parent_node(server_address=(ip, int(port)))
                 self.stream.get_parent_node().add_message_to_out_buff(PacketFactory.new_join_packet(self.stream.get_server_address()).get_buf())
                 print("join",self.stream.get_parent_node().out_buff)
                 self.stream.get_parent_node().send_message()
@@ -359,7 +359,7 @@ class Peer:
             print("register in root:" + str(packet.get_buf()))
             if not self.__check_registered(packet.get_source_server_address()):
                 print("node address ",packet.get_source_server_address())
-                self.stream.add_node(packet.get_source_server_address(), is_child=True ,set_register_connection=True)
+                self.stream.add_node(packet.get_source_server_address(),set_register_connection=True)
                 response_packet = self.packet_factory.new_register_packet("RES", self.stream.get_server_address())
                 self.stream.add_message_to_out_buff(packet.get_source_server_address(), response_packet.get_buf())
      #   else:
@@ -517,7 +517,7 @@ class Peer:
         :return:
         """
         print("recv join: " + str(packet.get_buf()))
-        self.stream.add_node(packet.get_source_server_address(), is_child=True)
+        self.stream.add_node(packet.get_source_server_address())
 
     def __get_neighbour(self, sender):
         """
