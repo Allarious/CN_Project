@@ -6,5 +6,5 @@ if __name__ == "__main__":
     # server.run()
 
     client = Peer("127.0.0.1", 61035,
-                  is_root=False,root_address=("127.0.0.1", 65035))
+                  is_root=False,root_address=("127.0.0.1", 65055))
     client.run()
