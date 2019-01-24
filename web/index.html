@@ -9,16 +9,28 @@
   
       <link rel="stylesheet" href="css/style.css">
 
+
+      <script>
+          function mes(){
+                console.log("SendMessage" + document.getElementById("text").value)
+          }
+          function reg(){
+                console.log("Register")
+          }
+          function adv(){
+                console.log("Advertise")
+          } 
+      </script>
   
 </head>
 
 <body>
     <div class="head" contenteditable="true">Enter message you want to send:</div>
-    <input class="text-message"/>
+    <input class="text-message" id="text"/>
     <div class="buttons">
-        <div class="register text-button">Register</div>
-        <div class="advertise text-button">Advertise</div>
-        <div class="message text-button">Message</div>
+        <div class="register text-button" id="reg" onclick="reg()">Register</div>
+        <div class="advertise text-button" id="ad" onclick="adv()">Advertise</div>
+        <div class="message text-button" id="mes" onclick="mes()">Message</div>
     </div>
 </body>
 

@@ -77,4 +77,8 @@ body {
   text-align: center;
   line-height: 80px;
   cursor: pointer;
+  transition: 0.3s;
+}
+.text-button:hover{
+  background-color: brown;
 }
