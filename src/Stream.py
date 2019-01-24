@@ -207,6 +207,10 @@ class Stream:
             if self.nodes_is_parent[i] == 1:
                 return self.nodes[i]
 
+    def print_out_buffs(self):
+        for node in self.nodes:
+            print(node.out_buff)
+
 
 
 #Tests

@@ -53,6 +53,7 @@ class Peer:
         self.server_ip = SemiNode.parse_ip(server_ip)
         self.server_port = SemiNode.parse_port(str(server_port))
         self.is_root = is_root
+        self.flag = False
         # self.root_address = (SemiNode.parse_ip(root_address[0]), SemiNode.parse_port(root_address[1]))
 
         self.neighbours = []
@@ -73,7 +74,8 @@ class Peer:
         :return:
         """
         self.user_interfarce.start()
-        self.handle_user_interface_buffer()
+        t = threading.Thread(target=self.handle_user_interface_buffer)
+        t.start()
 
     def handle_user_interface_buffer(self):
         """
@@ -100,7 +102,9 @@ class Peer:
                 self.stream.add_message_to_out_buff(self.root_address,advertise_packet.get_buf())
             elif "".join(self.user_interfarce.buffer)[:11] == 'SendMessage':
                 print("SendMessage")
-                message_packet=self.packet_factory.new_message_packet(self.user_interfarce.buffer[11:],self.stream.get_server_address())
+                print("".join(self.user_interfarce.buffer)[11:])
+                message_packet=self.packet_factory.new_message_packet("".join(self.user_interfarce.buffer)[11:],self.stream.get_server_address())
+                print(message_packet.get_buf())
                 self.send_broadcast_packet(message_packet)
             else:
                 if len(self.user_interfarce.buffer) != 0 :
@@ -138,8 +142,11 @@ class Peer:
                     self.handle_packet(packet)
 
                 # TODO: user interface buffer parse
-                self.start_user_interface()
-
+                if not self.flag:
+                    self.start_user_interface()
+                    self.flag = True
+                print(self.stream._server_in_buf)
+                print(self.stream.print_out_buffs())
                 self.stream.send_out_buf_messages()
             elif not self.is_root and self.reunion_mode == "pending" and datetime.now() - self.last_reunion_sent_time > timedelta(
                     seconds=4):
@@ -215,9 +222,9 @@ class Peer:
 
         :return:
         """
+        print("Send broadcast message: " + str(broadcast_packet.get_buf()))
         message = broadcast_packet.get_buf()
-        self.stream.broadcast_to_none_registers(message,self.stream.get_server_address())
-        pass
+        self.stream.broadcast_to_none_registers(message, self.stream.get_server_address())
 
     def handle_packet(self, packet):
         """
@@ -299,6 +306,7 @@ class Peer:
 
         if packet.get_res_or_req() == "REQ":
             if self.is_root:
+                print("advertise REQ in root:" + str(packet.get_buf()))
                 if self.__check_registered(packet.get_source_server_address()):
                     parent = self.__get_neighbour(packet.get_source_server_address())
                     new_packet = self.packet_factory.new_advertise_packet("RES", self.stream.get_server_address(),
@@ -308,6 +316,7 @@ class Peer:
 
         else:
             if not self.is_root:
+                print("advertise RES in peer:" + str(packet.get_buf()))
                 buff = packet.get_buf()[23:]
                 buff = str(buff)
                 buff = buff[2:]
@@ -340,6 +349,7 @@ class Peer:
         """
         # TODO:check this again
         if self.is_root:
+            print("register in root:" + str(packet.get_buf()))
             if not self.__check_registered(packet.get_source_server_address()):
                 print("node address ",packet.get_source_server_address())
                 self.stream.add_node(packet.get_source_server_address(), set_register_connection=True)
@@ -363,6 +373,7 @@ class Peer:
         :return: Whether is address in our neighbours or not.
         :rtype: bool
         """
+        print("neighbour checked!")
         if self.stream.get_node_by_server(address[0], address[1]):
             if not (self.stream.get_node_by_server(address[0], address[1]).is_register()):
                 return True
@@ -383,6 +394,7 @@ class Peer:
 
         :return:
         """
+        print("from handle message: " + str(packet.get_buf()))
         print(self.stream.broadcast_to_none_registers(str(packet.get_buf()), packet.get_source_server_address()))
 
     #Tested packet builds not send!
@@ -421,6 +433,7 @@ class Peer:
 
         if res == "REQ":
             if self.is_root:
+                print("reunion REQ in root:" + str(packet.get_buf()))
                 # updating reunions arrival time
                 adds = []
                 for i in range(len(ips)):
@@ -444,7 +457,7 @@ class Peer:
                 self.stream.add_message_to_out_buff(node_address, new_packet)
 
             else:
-
+                print("reunion REQ in peer:" + str(packet.get_buf()))
                 ips.append(self.stream.get_server_address()[0])
                 ports.append(self.stream.get_server_address()[1])
 
@@ -460,6 +473,7 @@ class Peer:
                 self.stream.add_message_to_out_buff(parent_address, new_packet)
 
         elif res == "RES":
+            print("reunion RES in peer:" + str(packet.get_buf()))
             if ips[len(ips) - 1] == self.stream.get_server_address()[0] \
                     and \
                     ports[len(ports) - 1] == self.stream.get_server_address()[1]:
@@ -495,6 +509,7 @@ class Peer:
 
         :return:
         """
+        print("sending join: " + str(packet.get_buf()))
         self.stream.add_node(packet.get_source_server_address(), is_child=True)
 
     def __get_neighbour(self, sender):
