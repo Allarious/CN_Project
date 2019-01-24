@@ -182,7 +182,7 @@ class Peer:
         while True:
             if self.is_root:
                 for address, last_reunion_time in self.reunions_arrival_time.items():
-                    if (datetime.now() - last_reunion_time) > timedelta(seconds=4):
+                    if (datetime.now() - last_reunion_time) > timedelta(seconds=16):
                         self.network_graph.turn_off_node(address)
                         self.network_graph.turn_off_subtree(address)
                         self.network_graph.remove_node(address)
