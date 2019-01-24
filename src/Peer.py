@@ -210,7 +210,7 @@ class Peer:
                         self.last_reunion_sent_time = datetime.now()
                         self.reunion_mode = "pending"
                 elif self.reunion_mode == "pending":
-                    if (datetime.now() - self.last_reunion_sent_time) > timedelta(seconds=4):
+                    if (datetime.now() - self.last_reunion_sent_time) > timedelta(seconds=16):
                         advertise_packet = self.packet_factory.new_advertise_packet("REQ",
                                                                                     (self.server_ip, self.server_port))
                         self.stream.add_message_to_out_buff(self.root_address, advertise_packet.get_buf())

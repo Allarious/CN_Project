@@ -64,7 +64,17 @@ class NetworkGraph:
         while current_level:
             next_level = []
             for node in current_level:
-                if (node not in self.get_subtree(sender)):
+                if self.find_node(sender[0],sender[1]):
+                    if node not in self.get_subtree(sender):
+                        if not (node.is_turned_off()):
+                            if len(node.get_children()) == 0 or len(node.get_children()) == 1:
+                                father = node
+                                next_level = []
+                                break
+                            else:
+                                next_level.append(node.get_children()[0])
+                                next_level.append(node.get_children()[1])
+                else:
                     if not (node.is_turned_off()):
                         if len(node.get_children()) == 0 or len(node.get_children()) == 1:
                             father = node
@@ -73,6 +83,7 @@ class NetworkGraph:
                         else:
                             next_level.append(node.get_children()[0])
                             next_level.append(node.get_children()[1])
+
             current_level = next_level
 
         return father.get_address()
@@ -118,8 +129,8 @@ class NetworkGraph:
         while curr_level:
             next_level = []
             for node in curr_level:
-                self.turn_off_node(node.get_address)
-                next_level.extend(node.get_children)
+                self.turn_off_node(node.get_address())
+                next_level.extend(node.get_children())
 
             curr_level = next_level
 
@@ -130,7 +141,7 @@ class NetworkGraph:
             next_level = []
             for node in curr_level:
                 subtree.append(node)
-                next_level.extend(node.get_children)
+                next_level.extend(node.get_children())
 
             curr_level = next_level
 
@@ -171,20 +182,27 @@ class NetworkGraph:
          """
 
 
-'''root=GraphNode((0,0))
-root.set_parent((100,100))
 
+
+root=GraphNode((0,0))
 network=NetworkGraph(root)
 
-#network.add_node(1,1,root.get_address())
-#print(network.nodes)
+network.add_node(1,1,root.get_address())
+# print(network.nodes)
 
-for i in range(1,10):
-    network.add_node(i,i,network.find_live_node((i,i)))
+network.add_node(2,2,network.find_live_node((2,2)))
+network.add_node(3,3,network.find_live_node((3,3)))
+
+print(network.get_subtree((1,1)))
+network.turn_off_subtree((1,1))
 
 
-for i in network.nodes:
-    if(i.get_address()!=(0,0)):
-        print(i.get_parent().get_address())
 
-'''
+# for node in network.nodes:
+#     print("childrern of",node.get_address())
+#     for chilf in node.get_children():
+#         print(chilf.get_address())
+#
+#
+# for i in network.get_subtree((1,1)):
+#     print(i.get_address())
